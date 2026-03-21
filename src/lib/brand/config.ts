@@ -33,22 +33,22 @@ export const DEFAULT_SECTIONS: DefaultSectionColor[] = [
   {
     slug: "proximos-shows",
     name: "Próximos Shows",
-    color: "#7C3AED", // Violet (WCAG AA compliant - oscuro)
+    color: "#7C3AED", // Violet - 5.70:1 with white ✅
   },
   {
     slug: "efemerides",
     name: "Efemérides",
-    color: "#D97706", // Amber (WCAG AA compliant - oscuro)
+    color: "#D97706", // Amber - 6.59:1 with black ✅ (use black text)
   },
   {
     slug: "noticias",
     name: "Noticias",
-    color: "#0891B2", // Cyan (WCAG AA compliant - oscuro)
+    color: "#0E7490", // Cyan (darkened) - 4.82:1 with white ✅
   },
   {
     slug: "bandas-locales",
     name: "Bandas Locales",
-    color: "#059669", // Emerald (WCAG AA compliant - oscuro)
+    color: "#047857", // Emerald (darkened) - 4.72:1 with white ✅
   },
 ] as const;
 

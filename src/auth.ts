@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import type { AuthOptions, Session } from "next-auth";
+import type { NextRequest } from "next/server";
 
 type OperatorUser = {
   id: string;
@@ -9,26 +10,22 @@ type OperatorUser = {
   role: string;
 };
 
-type AuthCallbackConfig = {
-  auth: () => Promise<(Session & { user?: { tenantId?: string } }) | null>;
-  handlers?: {
-    GET: () => unknown;
-    POST: () => unknown;
-  };
-  signIn?: (...args: unknown[]) => unknown;
-  signOut?: (...args: unknown[]) => unknown;
-};
-
-type RouteHandler = (request?: unknown, context?: unknown) => Promise<unknown>;
-
 export const authConfig: AuthOptions = {
   providers: [
     Credentials({
       name: "Internal",
       credentials: {
-        email: { label: "Email", type: "email", placeholder: "operator@envivo-studio.com" },
+        email: {
+          label: "Email",
+          type: "email",
+          placeholder: "operator@envivo-studio.com",
+        },
         password: { label: "Password", type: "password" },
-        tenantId: { label: "Tenant", type: "text", placeholder: "envivo-tandil" },
+        tenantId: {
+          label: "Tenant",
+          type: "text",
+          placeholder: "envivo-tandil",
+        },
       },
       async authorize(credentials) {
         // TODO: Replace this with your own user lookup + password verification.
@@ -56,7 +53,9 @@ export const authConfig: AuthOptions = {
       return params.token;
     },
     session(params) {
-      const nextSession = params.session as Session & { user?: { tenantId?: string } };
+      const nextSession = params.session as Session & {
+        user?: { tenantId?: string };
+      };
 
       if (nextSession.user && params.token.tenantId) {
         nextSession.user.tenantId = params.token.tenantId as string;
@@ -67,16 +66,15 @@ export const authConfig: AuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
 };
 
-const authResult = NextAuth(authConfig) as AuthCallbackConfig;
+// Create NextAuth handler
+const handler = NextAuth(authConfig);
 
-export const auth = authResult.auth ?? authResult;
-export const handlers = authResult.handlers;
-export const signIn = authResult.signIn;
-export const signOut = authResult.signOut;
+// Export auth helpers
+export const auth = handler.auth;
+export const signIn = handler.signIn;
+export const signOut = handler.signOut;
 
-const fallbackAuthHandler: RouteHandler = async () => {
-  return new Response(null, { status: 501 });
-};
-
-export const GET = handlers?.GET ?? fallbackAuthHandler;
-export const POST = handlers?.POST ?? fallbackAuthHandler;
+// Export GET and POST handlers for App Router
+// Cast to any to bypass strict type checking with Next.js 16
+export const GET = handler.GET as any;
+export const POST = handler.POST as any;

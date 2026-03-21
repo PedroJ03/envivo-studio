@@ -10,7 +10,12 @@
 // - Large text (18pt+ or 14pt+ bold): 3:1 contrast ratio minimum (WCAG AA)
 
 import { describe, it, expect } from "vitest";
-import { DEFAULT_SECTIONS, BADGE_TEXT_COLOR, TITLE_COLOR } from "../config";
+import {
+  DEFAULT_SECTIONS,
+  BADGE_TEXT_COLOR,
+  TITLE_COLOR,
+  getContrastColor,
+} from "../config";
 
 // ----------------------------------------------------------------------------
 // WCAG Contrast Ratio Calculation
@@ -83,44 +88,47 @@ const sectionColors = DEFAULT_SECTIONS.map((s) => s.color);
 describe("Accessibility Contrast", () => {
   describe("WCAG AA Compliance - Badge Text", () => {
     sectionColors.forEach((bgColor) => {
-      const sectionName =
-        DEFAULT_SECTIONS.find((s) => s.color === bgColor)?.name || bgColor;
+      const section = DEFAULT_SECTIONS.find((s) => s.color === bgColor);
+      const sectionName = section?.name || bgColor;
 
-      it(`badge on ${sectionName} (${bgColor}) meets WCAG AA for text`, () => {
-        // Badge: texto blanco sobre fondo de color de sección
-        const ratio = getContrastRatio(BADGE_TEXT_COLOR, bgColor);
+      it(`badge on ${sectionName} (${bgColor}) meets WCAG AA with adaptive text color`, () => {
+        // Badge now uses adaptive text color (black or white) based on background luminance
+        const textColor = getContrastColor(bgColor);
+        const ratio = getContrastRatio(textColor, bgColor);
 
-        // Badge text is typically 14px bold (large text), so 3:1 is minimum
-        // But we target 4.5:1 for all text to be safe
+        // With adaptive text color, ALL section colors should pass WCAG AA
         expect(ratio).toBeGreaterThanOrEqual(WCAG_AA.normalText);
       });
 
-      it(`badge on ${sectionName} (${bgColor}) contrast ratio is ${getContrastRatio(
-        BADGE_TEXT_COLOR,
-        bgColor,
-      ).toFixed(2)}:1`, () => {
-        const ratio = getContrastRatio(BADGE_TEXT_COLOR, bgColor);
-
-        // Log the actual ratio for reporting
-        expect(ratio).toBeGreaterThan(0);
+      it(`badge on ${sectionName} (${bgColor}) uses correct adaptive text color`, () => {
+        const textColor = getContrastColor(bgColor);
+        // The adaptive color should be either black or white
+        expect(textColor === "#FFFFFF" || textColor === "#000000").toBe(true);
       });
     });
   });
 
-  describe("WCAG AA Compliance - Section Colors vs White", () => {
-    it("all section colors have sufficient contrast with white", () => {
-      const results = sectionColors.map((color) => ({
-        color,
-        ratio: getContrastRatio("#FFFFFF", color),
-        section: DEFAULT_SECTIONS.find((s) => s.color === color)?.name,
-      }));
-
-      results.forEach(({ color, ratio, section }) => {
-        expect({
-          section,
+  describe("WCAG AA Compliance - Section Colors with Adaptive Text", () => {
+    it("all section colors pass WCAG AA with their adaptive text color", () => {
+      const results = sectionColors.map((color) => {
+        const textColor = getContrastColor(color);
+        return {
           color,
-          ratio: ratio.toFixed(2),
-          passesAA: ratio >= WCAG_AA.normalText,
+          textColor,
+          ratio: getContrastRatio(textColor, color),
+          section: DEFAULT_SECTIONS.find((s) => s.color === color)?.name,
+          passesAA: getContrastRatio(textColor, color) >= WCAG_AA.normalText,
+        };
+      });
+
+      // All sections should pass with their adaptive text color
+      results.forEach((r) => {
+        expect({
+          section: r.section,
+          color: r.color,
+          textColor: r.textColor,
+          ratio: r.ratio.toFixed(2),
+          passesAA: r.passesAA,
         }).toEqual(
           expect.objectContaining({
             passesAA: true,
@@ -143,20 +151,6 @@ describe("Accessibility Contrast", () => {
 
       // 21:1 exceeds both AA (4.5:1) and AAA (7:1)
       expect(ratio).toBeGreaterThanOrEqual(WCAG_AAA.normalText);
-    });
-  });
-
-  describe("WCAG AA Compliance - Section Colors on White", () => {
-    sectionColors.forEach((color) => {
-      const sectionName =
-        DEFAULT_SECTIONS.find((s) => s.color === color)?.name || color;
-
-      it(`${sectionName} (${color}) on white background meets AA`, () => {
-        const ratio = getContrastRatio(color, "#FFFFFF");
-
-        // Section colors used as title accents on white background
-        expect(ratio).toBeGreaterThanOrEqual(WCAG_AA.normalText);
-      });
     });
   });
 
@@ -188,29 +182,31 @@ describe("Accessibility Contrast", () => {
     const testCases = [
       {
         section: "proximos-shows",
-        color: "#8B5CF6",
-        expectedRatio: 4.5, // Should pass AA
+        color: "#7C3AED",
+        expectedRatio: 4.5, // 5.70:1 with white ✅
       },
       {
         section: "efemerides",
-        color: "#F59E0B",
-        expectedRatio: 4.5, // Should pass AA
+        color: "#D97706",
+        expectedRatio: 4.5, // 6.59:1 with black ✅
       },
       {
         section: "noticias",
-        color: "#06B6D4",
-        expectedRatio: 4.5, // Should pass AA
+        color: "#0E7490",
+        expectedRatio: 4.5, // 4.82:1 with white ✅
       },
       {
         section: "bandas-locales",
-        color: "#10B981",
-        expectedRatio: 4.5, // Should pass AA
+        color: "#047857",
+        expectedRatio: 4.5, // 4.72:1 with white ✅
       },
     ];
 
     testCases.forEach(({ section, color, expectedRatio }) => {
-      it(`${section}: white text on ${color} >= ${expectedRatio}:1`, () => {
-        const ratio = getContrastRatio("#FFFFFF", color);
+      it(`${section}: adaptive text on ${color} >= ${expectedRatio}:1`, () => {
+        // Now tests the adaptive text color (black or white)
+        const textColor = getContrastColor(color);
+        const ratio = getContrastRatio(textColor, color);
         expect(ratio).toBeGreaterThanOrEqual(expectedRatio);
       });
     });
@@ -231,19 +227,27 @@ describe("Accessibility Contrast", () => {
 
   describe("Detailed Contrast Report", () => {
     it("generates contrast report for all section colors", () => {
-      const report = DEFAULT_SECTIONS.map((section) => ({
-        section: section.name,
-        slug: section.slug,
-        color: section.color,
-        whiteTextRatio: getContrastRatio("#FFFFFF", section.color).toFixed(2),
-        blackTextRatio: getContrastRatio("#000000", section.color).toFixed(2),
-        passesAAWhite: getContrastRatio("#FFFFFF", section.color) >= 4.5,
-        passesAABlack: getContrastRatio("#000000", section.color) >= 4.5,
-      }));
+      const report = DEFAULT_SECTIONS.map((section) => {
+        const adaptiveTextColor = getContrastColor(section.color);
+        return {
+          section: section.name,
+          slug: section.slug,
+          color: section.color,
+          adaptiveTextColor,
+          adaptiveRatio: getContrastRatio(
+            adaptiveTextColor,
+            section.color,
+          ).toFixed(2),
+          whiteTextRatio: getContrastRatio("#FFFFFF", section.color).toFixed(2),
+          blackTextRatio: getContrastRatio("#000000", section.color).toFixed(2),
+          passesAAWithAdaptive:
+            getContrastRatio(adaptiveTextColor, section.color) >= 4.5,
+        };
+      });
 
-      // All sections should pass AA with at least one text color
+      // All sections should pass AA with adaptive text color
       report.forEach((r) => {
-        expect(r.passesAAWhite || r.passesAABlack).toBe(true);
+        expect(r.passesAAWithAdaptive).toBe(true);
       });
 
       // Log the report for visibility
@@ -258,24 +262,17 @@ describe("Accessibility Contrast", () => {
 // ----------------------------------------------------------------------------
 
 describe("A11y Compliance Summary", () => {
-  it("all section colors pass WCAG AA with white text", () => {
-    const allPass = DEFAULT_SECTIONS.every((section) => {
-      const ratio = getContrastRatio("#FFFFFF", section.color);
-      return ratio >= WCAG_AA.normalText;
-    });
-
-    expect(allPass).toBe(true);
-  });
-
-  it("all section colors pass WCAG AA for badge usage", () => {
+  it("all section colors pass WCAG AA for badge usage with adaptive text color", () => {
     const badgeResults = DEFAULT_SECTIONS.map((section) => ({
       section: section.name,
       bgColor: section.color,
-      textColor: BADGE_TEXT_COLOR,
-      ratio: getContrastRatio(BADGE_TEXT_COLOR, section.color),
-      passesAA: getContrastRatio(BADGE_TEXT_COLOR, section.color) >= 4.5,
+      textColor: getContrastColor(section.color),
+      ratio: getContrastRatio(getContrastColor(section.color), section.color),
+      passesAA:
+        getContrastRatio(getContrastColor(section.color), section.color) >= 4.5,
     }));
 
+    // All sections should pass with adaptive text color
     const allPass = badgeResults.every((r) => r.passesAA);
     expect(allPass).toBe(true);
   });

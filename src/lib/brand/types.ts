@@ -81,6 +81,8 @@ export interface BadgeSectionProps {
   text: string;
   bgColor: string;
   textColor?: string;
+  /** When provided and textColor is not set, automatically calculates optimal text color for WCAG AA contrast */
+  sectionSlug?: BrandSectionSlug;
   size?: "sm" | "md" | "lg";
   className?: string;
 }
