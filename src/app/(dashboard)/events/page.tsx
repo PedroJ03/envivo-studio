@@ -4,7 +4,7 @@ import { and, desc, eq } from "drizzle-orm";
 
 import { withTenantDb } from "@/lib/db/client";
 import { events } from "@/lib/db/schema";
-import { TENANT_HEADER } from "@/middleware";
+import { TENANT_HEADER } from "@/proxy";
 
 type EventCard = {
   id: string;

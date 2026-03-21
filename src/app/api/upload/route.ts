@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { withTenantDb } from "@/lib/db/client";
 import { candidateContent, events, photos } from "@/lib/db/schema";
 import { tenantFilter } from "@/lib/db/tenant";
-import { TENANT_HEADER } from "@/middleware";
+import { TENANT_HEADER } from "@/proxy";
 
 const uploadPayloadSchema = z.object({
   eventId: z.string().min(1),

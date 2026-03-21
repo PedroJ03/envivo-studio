@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { NextRequest, NextResponse } from "next/server";
 
-import { TENANT_HEADER } from "@/middleware";
+import { TENANT_HEADER } from "@/proxy";
 import { inngestClient } from "@/inngest/client";
 
 const scrapeEventBodySchema = z.object({

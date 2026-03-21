@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 
 import { withTenantDb } from "@/lib/db/client";
 import { candidateContent, contentStates, events, generatedOutputs, personas, photos } from "@/lib/db/schema";
-import { TENANT_HEADER } from "@/middleware";
+import { TENANT_HEADER } from "@/proxy";
 import { ContentDetailClient } from "./content-detail-client";
 
 type RouteContext = {

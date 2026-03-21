@@ -4,7 +4,7 @@ import { desc, eq, inArray } from "drizzle-orm";
 import { withTenantDb } from "@/lib/db/client";
 import { candidateContent, contentStates } from "@/lib/db/schema";
 import { tenantFilter } from "@/lib/db/tenant";
-import { TENANT_HEADER } from "@/middleware";
+import { TENANT_HEADER } from "@/proxy";
 import { ContentListClient } from "./content-list-client";
 
 type ContentMachineState =

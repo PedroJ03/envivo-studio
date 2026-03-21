@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { desc, eq, and } from "drizzle-orm";
 
-import { TENANT_HEADER } from "@/middleware";
+import { TENANT_HEADER } from "@/proxy";
 import { withTenantDb } from "@/lib/db/client";
 import { contentStates } from "@/lib/db/schema";
 import { tenantFilter } from "@/lib/db/tenant";

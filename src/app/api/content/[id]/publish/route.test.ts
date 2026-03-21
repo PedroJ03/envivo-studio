@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
-import { TENANT_HEADER } from "@/middleware";
+import { TENANT_HEADER } from "@/proxy";
 
 // Mock INSTAGRAM_PUBLISH_EVENT constant
 const INSTAGRAM_PUBLISH_EVENT = "content/instagram.publish";

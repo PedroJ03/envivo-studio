@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
-import { TENANT_HEADER } from "@/middleware";
+import { TENANT_HEADER } from "@/proxy";
 
 const { composeCandidate, MockComposerPhotoResolutionError } = vi.hoisted(() => {
   class MockComposerPhotoResolutionError extends Error {

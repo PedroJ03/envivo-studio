@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { TENANT_HEADER } from "@/middleware";
+import { TENANT_HEADER } from "@/proxy";
 import { withTenantDb } from "@/lib/db/client";
 import { candidateContent, contentStates } from "@/lib/db/schema";
 import { inngestClient } from "@/inngest/client";
