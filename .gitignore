@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# agent skills (user-specific, see docs/references/agent-skills.md for catalog)
+.agents/skills/
+.claude/skills/
