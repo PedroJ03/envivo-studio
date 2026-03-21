@@ -252,6 +252,8 @@ export const candidateContent = pgTable(
         onDelete: "set null",
       },
     ),
+    templateId: text("template_id"), // Brand template format (e.g., 'post-vertical-45')
+    templateVariant: text("template_variant"), // Brand template variant (e.g., 'classic')
     status: candidateStatusEnum("status").default("candidate").notNull(),
     title: text("title").notNull(),
     summaryJson: jsonb("summary_json")
