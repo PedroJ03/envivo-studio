@@ -15,6 +15,62 @@
       "when": 1774035788890,
       "tag": "0001_slim_spot",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1742577600000,
+      "tag": "0002_create_operators",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1742577700000,
+      "tag": "0003_add_calendar_events",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1742577800000,
+      "tag": "0004_add_content_feed_items",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1742577900000,
+      "tag": "0005_add_ingestion_sources",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1742578000000,
+      "tag": "0006_add_topic_selections",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1742578100000,
+      "tag": "0007_create_sections",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1742578200000,
+      "tag": "0008_create_brand_configs",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1742578300000,
+      "tag": "0009_add_section_to_candidate_content",
+      "breakpoints": true
     }
   ]
 }

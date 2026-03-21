@@ -1,0 +1,400 @@
+# ============================================================================
+# Content Ingestion Sources Configuration
+# ============================================================================
+#
+# This file defines all data sources for the dual-system content ingestion:
+#   - System A: Calendar Events (concerts, festivals, historical events)
+#   - System B: Content Feed (breaking news, trending, curiosities, trivia)
+#
+# IMPORTANT: Credentials are referenced via environment variables (${VAR_NAME}).
+# Never hardcode API keys or secrets here.
+#
+# ============================================================================
+
+# Default settings applied to all sources unless overridden
+defaults:
+  # Retry configuration for failed requests
+  retry:
+    max_retries: 3
+    backoff_ms: 1000
+
+  # Circuit breaker configuration
+  circuit_breaker:
+    failure_threshold: 5
+    reset_timeout_ms: 300000 # 5 minutes
+
+  # Cache TTL for API responses (in seconds)
+  cache:
+    api_response_ttl: 3600 # 1 hour default
+
+# ============================================================================
+# System A: Calendar Events Sources
+# ============================================================================
+
+sources:
+  # --------------------------------------------------------------------------
+  # Wikimedia On This Day
+  # --------------------------------------------------------------------------
+  - slug: wikimedia-onthisday
+    name: "Wikimedia On This Day"
+    system: A
+    connector: wikimedia
+    description: |
+      Historical events from Wikipedia's "On This Day" feed.
+      Filters for music-related events (concerts, album releases, artist birthdays, etc.)
+    is_shared: true
+    enabled: true
+    priority: 2
+    config:
+      # Wikimedia API base URL
+      base_url: "https://api.wikimedia.org/feed/v1/wikipedia/en/onthisday"
+      # Filter for music-related keywords
+      music_keywords:
+        - "music"
+        - "musician"
+        - "band"
+        - "singer"
+        - "song"
+        - "album"
+        - "concert"
+        - "festival"
+        - "rock"
+        - "jazz"
+        - "blues"
+        - "pop"
+    cache:
+      api_response_ttl: 86400 # 24 hours - historical data doesn't change
+
+  # --------------------------------------------------------------------------
+  # Ticketmaster Discovery API
+  # --------------------------------------------------------------------------
+  - slug: ticketmaster-discovery
+    name: "Ticketmaster Discovery"
+    system: A
+    connector: ticketmaster
+    description: |
+      Live music events from Ticketmaster's global discovery API.
+      Searches in Argentina, US, Mexico, and Spain markets.
+    is_shared: true
+    enabled: true
+    priority: 1
+    config:
+      # API key from Ticketmaster Developer Portal
+      api_key: ${TICKETMASTER_API_KEY}
+      # Geographic markets to search
+      markets:
+        - "AR" # Argentina
+        - "US" # United States
+        - "MX" # Mexico
+        - "ES" # Spain
+      # How far ahead to search for events (in days)
+      look_ahead_days: 90
+      # Classification filter
+      classification_name: "music"
+    rate_limit:
+      # Ticketmaster daily limit
+      requests_per_day: 5000
+      # Approximate requests per second to stay under limit
+      requests_per_second: 0.058
+    retry:
+      max_retries: 3
+      backoff_ms: 2000
+    circuit_breaker:
+      failure_threshold: 5
+      reset_timeout_ms: 300000 # 5 minutes
+    cache:
+      api_response_ttl: 3600 # 1 hour
+
+  # --------------------------------------------------------------------------
+  # Eventbrite Argentina
+  # --------------------------------------------------------------------------
+  - slug: eventbrite-argentina
+    name: "Eventbrite Argentina"
+    system: A
+    connector: eventbrite
+    description: |
+      Music events in Argentina from Eventbrite's API.
+      Includes concerts, festivals, and live music performances.
+    is_shared: true
+    enabled: true
+    priority: 2
+    config:
+      # Eventbrite API key
+      api_key: ${EVENTBRITE_API_KEY}
+      # Location filter
+      location: "Buenos Aires, Argentina"
+      # Search radius in kilometers
+      radius_km: 100
+      # Event categories to include
+      categories:
+        - "music"
+        - "concerts"
+      # Sort order
+      sort: "date"
+    rate_limit:
+      # Eventbrite rate limit (varies by plan)
+      requests_per_second: 0.5
+    cache:
+      api_response_ttl: 1800 # 30 minutes
+
+  # --------------------------------------------------------------------------
+  # Municipalidad de Tandil
+  # --------------------------------------------------------------------------
+  - slug: tandil-municipio
+    name: "Municipalidad de Tandil"
+    system: A
+    connector: scraper
+    description: |
+      Cultural events from the Tandil municipal government website.
+      Scraper for the agenda-cultural page.
+    is_shared: false
+    tenant_id: ${TANDIL_TENANT_ID}
+    enabled: true
+    priority: 2
+    config:
+      # Municipal website URL
+      base_url: "https://tandil.gov.ar/agenda-cultural"
+      # CSS selectors for scraping (adjust if website changes)
+      selectors:
+        event_container: ".evento, .event-item, article.evento"
+        title: ".titulo, h2, h3, .event-title"
+        date: ".fecha, .date, time"
+        description: ".descripcion, .description, p"
+        location: ".lugar, .location, .venue"
+        link: "a[href]"
+      # Fallback date formats to try
+      date_formats:
+        - "%d de %B" # "15 de marzo"
+        - "%Y-%m-%d" # ISO format
+        - "%d/%m/%Y" # "15/03/2024"
+    cache:
+      api_response_ttl: 600 # 10 minutes - local events change often
+
+  # --------------------------------------------------------------------------
+  # El Diario de Tandil RSS
+  # --------------------------------------------------------------------------
+  - slug: eldiario-rss
+    name: "El Diario de Tandil RSS"
+    system: A
+    connector: rss
+    description: |
+      RSS feed from El Diario de Tandil, filtered for music events.
+    is_shared: false
+    tenant_id: ${TANDIL_TENANT_ID}
+    enabled: true
+    priority: 3
+    config:
+      # RSS feed URL
+      feed_url: "https://eldiaodotandil.com/feed"
+      # Filter keywords - only include items containing these words
+      filter_keywords:
+        - "música"
+        - "concierto"
+        - "festival"
+        - "evento"
+        - "banda"
+        - "cantante"
+        - "rock"
+        - "pop"
+      # Exclude keywords (optional)
+      exclude_keywords:
+        - "deportes" # Exclude sports news
+    cache:
+      api_response_ttl: 1800 # 30 minutes
+
+  # ============================================================================
+  # System B: Content Feed Sources
+  # ============================================================================
+
+  # --------------------------------------------------------------------------
+  # NewsAPI Music News
+  # --------------------------------------------------------------------------
+  - slug: newsapi-music
+    name: "NewsAPI Music News"
+    system: B
+    connector: newsapi
+    description: |
+      Breaking music news from NewsAPI.
+      Polls every 30 minutes for the latest music news.
+    is_shared: true
+    enabled: true
+    priority: 1
+    supports_breaking: true
+    schedule: "*/30 * * * *" # Every 30 minutes
+    config:
+      # NewsAPI key
+      api_key: ${NEWS_API_KEY}
+      # Search query
+      query: "música OR concierto OR artista OR banda OR festival"
+      # Languages to search
+      language: "es"
+      # Results per page (max 100)
+      page_size: 100
+      # Sort by relevance
+      sort_by: "relevancy"
+    rate_limit:
+      # NewsAPI free tier limit
+      requests_per_minute: 10
+    cache:
+      api_response_ttl: 600 # 10 minutes
+
+  # --------------------------------------------------------------------------
+  # GNews Music
+  # --------------------------------------------------------------------------
+  - slug: gnews-music
+    name: "GNews Music"
+    system: B
+    connector: gnews
+    description: |
+      Music news from GNews API.
+      Alternative source for breaking music news.
+    is_shared: true
+    enabled: true
+    priority: 1
+    supports_breaking: true
+    schedule: "*/30 * * * *"
+    config:
+      # GNews API key
+      api_key: ${GNEWS_API_KEY}
+      # Topic category
+      topic: "entertainment"
+      # Search query
+      query: "música"
+      # Language
+      language: "es"
+      # Max results per request
+      max: 20
+    rate_limit:
+      requests_per_day: 500 # GNews free tier
+    cache:
+      api_response_ttl: 600 # 10 minutes
+
+  # --------------------------------------------------------------------------
+  # Wikidata Trivia
+  # --------------------------------------------------------------------------
+  - slug: wikidata-trivia
+    name: "Wikidata Trivia"
+    system: B
+    connector: wikidata
+    description: |
+      Music trivia and curiosities from Wikidata SPARQL endpoint.
+      Daily batch to find interesting music facts.
+    is_shared: true
+    enabled: true
+    priority: 3
+    schedule: "0 6 * * *" # Daily at 6 AM
+    config:
+      # SPARQL endpoint
+      endpoint: "https://query.wikidata.org/sparql"
+      # Query file or inline query
+      query_file: "queries/music-trivia.sparql"
+      # Batch size per run
+      batch_size: 10
+      # Result language
+      language: "es"
+    cache:
+      api_response_ttl: 86400 # 24 hours
+
+  # --------------------------------------------------------------------------
+  # Rolling Stone Argentina
+  # --------------------------------------------------------------------------
+  - slug: rollingstone-argentina
+    name: "Rolling Stone Argentina"
+    system: B
+    connector: scraper
+    description: |
+      Music news and articles from Rolling Stone Argentina.
+      Scrapes the music section.
+    is_shared: true
+    enabled: true
+    priority: 2
+    schedule: "0 */6 * * *" # Every 6 hours
+    config:
+      # Rolling Stone Argentina URL
+      base_url: "https://rollingstone.com/music"
+      # CSS selectors for scraping
+      selectors:
+        article: "article"
+        title: "h2, h3"
+        summary: ".summary, .excerpt"
+        content: ".article-body"
+        published_date: "time[datetime]"
+        author: ".author-name"
+      # Pagination
+      max_pages: 3
+    cache:
+      api_response_ttl: 600 # 10 minutes
+
+  # --------------------------------------------------------------------------
+  # Indie Hoy
+  # --------------------------------------------------------------------------
+  - slug: indiehoy
+    name: "Indie Hoy"
+    system: B
+    connector: scraper
+    description: |
+      Argentine indie music news from Indie Hoy blog.
+    is_shared: false
+    tenant_id: ${TANDIL_TENANT_ID}
+    enabled: true
+    priority: 2
+    schedule: "0 */4 * * *" # Every 4 hours
+    config:
+      # Indie Hoy URL
+      base_url: "https://indiehoy.com"
+      # Category path
+      category: "musica"
+      # Selectors
+      selectors:
+        article: "article.post"
+        title: "h2 a, h3 a"
+        summary: ".entry-excerpt"
+        content: ".entry-content"
+      # Filter for music keywords
+      filter_keywords:
+        - "música"
+        - "banda"
+        - "álbum"
+        - "concierto"
+    cache:
+      api_response_ttl: 600 # 10 minutes
+
+# ============================================================================
+# Alerting Configuration
+# ============================================================================
+
+alerting:
+  # Error rate threshold (percentage)
+  error_rate_threshold: 10
+
+  # No events duration threshold (hours)
+  no_events_threshold_hours: 24
+
+  # Source down threshold (hours)
+  source_down_threshold_hours: 1
+
+  # Rate limit hit threshold (consecutive)
+  rate_limit_hit_threshold: 5
+
+  # Health check interval (minutes)
+  health_check_interval_minutes: 15
+
+# ============================================================================
+# Backfill Configuration
+# ============================================================================
+
+backfill:
+  # Default batch size for backfill operations
+  batch_size: 100
+
+  # Delay between batches (ms)
+  batch_delay_ms: 1000
+
+  # Max parallel source backfills
+  max_parallel_sources: 3
+
+  # Resume from checkpoint
+  checkpoint_enabled: true
+
+  # Checkpoint key prefix in Redis
+  checkpoint_prefix: "backfill:checkpoint"
