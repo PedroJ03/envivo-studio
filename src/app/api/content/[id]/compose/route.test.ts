@@ -3,21 +3,25 @@ import { NextRequest } from "next/server";
 
 import { TENANT_HEADER } from "@/proxy";
 
-const { composeCandidate, MockComposerPhotoResolutionError } = vi.hoisted(() => {
-  class MockComposerPhotoResolutionError extends Error {
-    public readonly code = "COMPOSER_PHOTO_RESOLUTION_TOO_LOW";
+const { composeCandidate, MockComposerPhotoResolutionError } = vi.hoisted(
+  () => {
+    class MockComposerPhotoResolutionError extends Error {
+      public readonly code = "COMPOSER_PHOTO_RESOLUTION_TOO_LOW";
 
-    constructor(width = 0, height = 0, min = 0) {
-      super(`Photo resolution ${width}x${height} is below minimum ${min}x${min}.`);
-      this.name = "ComposerPhotoResolutionError";
+      constructor(width = 0, height = 0, min = 0) {
+        super(
+          `Photo resolution ${width}x${height} is below minimum ${min}x${min}.`,
+        );
+        this.name = "ComposerPhotoResolutionError";
+      }
     }
-  }
 
-  return {
-    composeCandidate: vi.fn(),
-    MockComposerPhotoResolutionError,
-  };
-});
+    return {
+      composeCandidate: vi.fn(),
+      MockComposerPhotoResolutionError,
+    };
+  },
+);
 
 vi.mock("@/lib/composer/composer", () => ({
   composeCandidate,
@@ -54,7 +58,9 @@ function createRequest(input: unknown, tenantId?: string): NextRequest {
 
 describe("content compose API", () => {
   it("requires tenant header", async () => {
-    const response = await POST(createRequest({}, undefined), { params: { id: "content-1" } });
+    const response = await POST(createRequest({}, undefined), {
+      params: Promise.resolve({ id: "content-1" }),
+    });
     const payload = (await response.json()) as { error: string };
 
     expect(response.status).toBe(401);
@@ -62,7 +68,10 @@ describe("content compose API", () => {
   });
 
   it("validates payload", async () => {
-    const response = await POST(createRequest({ templateId: 123 }, "tenant-1"), { params: { id: "content-1" } });
+    const response = await POST(
+      createRequest({ templateId: 123 }, "tenant-1"),
+      { params: Promise.resolve({ id: "content-1" }) },
+    );
     const payload = (await response.json()) as { error: string };
 
     expect(response.status).toBe(400);
@@ -71,7 +80,8 @@ describe("content compose API", () => {
 
   it("persists composed asset and returns composed metadata", async () => {
     composeCandidate.mockResolvedValueOnce({
-      filePath: "/tmp/composer-assets/tenant/content-1/preview-post-content-1.png",
+      filePath:
+        "/tmp/composer-assets/tenant/content-1/preview-post-content-1.png",
       fileUrl: "/composer-assets/tenant/content-1/preview-post-content-1.png",
       templateId: "ig-post-square",
       width: 1080,
@@ -87,7 +97,7 @@ describe("content compose API", () => {
 
     const response = await POST(
       createRequest({ templateId: "ig-post-square", sortOrder: 1 }, "tenant-1"),
-      { params: { id: "content-1" } },
+      { params: Promise.resolve({ id: "content-1" }) },
     );
     const payload = (await response.json()) as {
       ok: boolean;
@@ -113,9 +123,13 @@ describe("content compose API", () => {
   });
 
   it("maps resolution errors to 400", async () => {
-    composeCandidate.mockRejectedValueOnce(new MockComposerPhotoResolutionError(1, 1, 720));
+    composeCandidate.mockRejectedValueOnce(
+      new MockComposerPhotoResolutionError(1, 1, 720),
+    );
 
-    const response = await POST(createRequest({}, "tenant-1"), { params: { id: "content-1" } });
+    const response = await POST(createRequest({}, "tenant-1"), {
+      params: Promise.resolve({ id: "content-1" }),
+    });
     const payload = (await response.json()) as { error: string; code: string };
 
     expect(response.status).toBe(400);

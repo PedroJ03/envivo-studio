@@ -242,7 +242,7 @@ export class RSSFeedConnector extends BaseConnector<NormalizedEvent> {
       },
       eventType: this.guessEventType(item),
       eventDate,
-      year: eventDate.getFullYear(),
+      year: new Date(eventDate).getFullYear(),
       location,
       artists: undefined,
       images: imageUrl
@@ -265,9 +265,7 @@ export class RSSFeedConnector extends BaseConnector<NormalizedEvent> {
    * Calculate content hash for deduplication.
    */
   calculateHash(item: NormalizedEvent): string {
-    return this.hashString(
-      `${item.title}|${item.eventDate.toISOString().split("T")[0]}`,
-    );
+    return this.hashString(`${item.title}|${item.eventDate}`);
   }
 
   /**
@@ -558,21 +556,21 @@ export class RSSFeedConnector extends BaseConnector<NormalizedEvent> {
   /**
    * Parse date from pubDate string.
    */
-  private parseDate(dateStr?: string): Date {
+  private parseDate(dateStr?: string): string {
     if (!dateStr) {
-      return new Date();
+      return new Date().toISOString().split("T")[0];
     }
 
     try {
       const parsed = new Date(dateStr);
       if (!isNaN(parsed.getTime())) {
-        return parsed;
+        return parsed.toISOString().split("T")[0];
       }
     } catch {
       // Continue
     }
 
-    return new Date();
+    return new Date().toISOString().split("T")[0];
   }
 
   /**
@@ -702,11 +700,9 @@ export class RSSFeedConnector extends BaseConnector<NormalizedEvent> {
   private calculateHashFromItem(
     item: FeedItem,
     title: string,
-    date: Date,
+    date: string,
   ): string {
-    return this.hashString(
-      `${title}|${date.toISOString().split("T")[0]}|${item.guid || item.link || ""}`,
-    );
+    return this.hashString(`${title}|${date}|${item.guid || item.link || ""}`);
   }
 }
 

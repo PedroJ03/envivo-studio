@@ -52,7 +52,7 @@ interface WikimediaResponse {
 }
 
 interface RawEventContext {
-  eventDate: Date;
+  eventDate: string;
   category: string;
 }
 
@@ -257,7 +257,7 @@ export class WikimediaOnThisDayConnector extends BaseConnector<NormalizedEvent> 
       eventDate: ctx.eventDate,
       year: event.year || undefined,
       location: undefined, // Historical events don't have specific locations
-      artists: artists.length > 0 ? artists : undefined,
+      artists: artists?.length ? artists : undefined,
       images: this.extractImages(event.pages),
       tags: this.extractTags(event.text, event.year),
       description: this.extractDescription(event),
@@ -330,7 +330,7 @@ export class WikimediaOnThisDayConnector extends BaseConnector<NormalizedEvent> 
       rawData: {
         event,
         _context: {
-          eventDate: new Date(date.getFullYear(), month - 1, day),
+          eventDate: `${date.getFullYear()}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`,
           category: this.determineCategory(event),
         },
       } as unknown as WikimediaEvent,
@@ -573,7 +573,7 @@ export class WikimediaOnThisDayConnector extends BaseConnector<NormalizedEvent> 
    */
   private calculateHashFromEvent(
     title: string,
-    eventDate: Date,
+    eventDate: string,
     year: number | undefined,
     artists: NormalizedEvent["artists"],
   ): string {
@@ -583,7 +583,7 @@ export class WikimediaOnThisDayConnector extends BaseConnector<NormalizedEvent> 
         .sort()
         .join("|") || "";
     return this.hashString(
-      `${normalizeForHash(title)}|${eventDate.toISOString().split("T")[0]}|${year || ""}|${artistKey}`,
+      `${normalizeForHash(title)}|${eventDate}|${year || ""}|${artistKey}`,
     );
   }
 }

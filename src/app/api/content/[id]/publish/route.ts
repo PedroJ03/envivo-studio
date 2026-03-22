@@ -8,9 +8,9 @@ import { INSTAGRAM_PUBLISH_EVENT } from "@/inngest/functions/publish-instagram";
 import { and, desc, eq } from "drizzle-orm";
 
 type RouteContext = {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 };
 
 export async function POST(request: NextRequest, context: RouteContext) {
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     );
   }
 
-  const contentId = context.params.id;
+  const { id: contentId } = await context.params;
 
   // Verify the content piece exists and is in a publishable state
   const validation = await withTenantDb(tenantId, async (tx) => {
@@ -31,10 +31,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const candidates = await tx
       .select()
       .from(candidateContent)
-      .where(and(
-        eq(candidateContent.id, contentId),
-        eq(candidateContent.tenantId, tenantId),
-      ))
+      .where(
+        and(
+          eq(candidateContent.id, contentId),
+          eq(candidateContent.tenantId, tenantId),
+        ),
+      )
       .limit(1);
 
     if (!candidates[0]) {
@@ -45,10 +47,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const states = await tx
       .select()
       .from(contentStates)
-      .where(and(
-        eq(contentStates.candidateContentId, contentId),
-        eq(contentStates.tenantId, tenantId),
-      ))
+      .where(
+        and(
+          eq(contentStates.candidateContentId, contentId),
+          eq(contentStates.tenantId, tenantId),
+        ),
+      )
       .orderBy(desc(contentStates.createdAt))
       .limit(1);
 
@@ -56,7 +60,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     // Content must be in reviewed or approved state to publish
     // (published state is also allowed for idempotent calls)
-    if (!latestState || !["reviewed", "approved", "published"].includes(latestState.state)) {
+    if (
+      !latestState ||
+      !["reviewed", "approved", "published"].includes(latestState.state)
+    ) {
       return {
         valid: false,
         error: "not_publishable" as const,
@@ -111,10 +118,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
     },
   });
 
-  return NextResponse.json({
-    ok: true,
-    status: "dispatched",
-    eventId: event.ids?.[0] ?? null,
-    message: "Instagram publish job dispatched",
-  }, { status: 202 });
+  return NextResponse.json(
+    {
+      ok: true,
+      status: "dispatched",
+      eventId: event.ids?.[0] ?? null,
+      message: "Instagram publish job dispatched",
+    },
+    { status: 202 },
+  );
 }

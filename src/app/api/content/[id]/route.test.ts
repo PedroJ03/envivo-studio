@@ -3,23 +3,24 @@ import { NextRequest } from "next/server";
 
 import { TENANT_HEADER } from "@/proxy";
 
-const { withTenantDb, MockInvalidTransitionError, MockContentNotFoundError } = vi.hoisted(() => ({
-  withTenantDb: vi.fn(),
-  MockInvalidTransitionError: class extends Error {
-    public readonly code = "INVALID_TRANSITION";
+const { withTenantDb, MockInvalidTransitionError, MockContentNotFoundError } =
+  vi.hoisted(() => ({
+    withTenantDb: vi.fn(),
+    MockInvalidTransitionError: class extends Error {
+      public readonly code = "INVALID_TRANSITION";
 
-    constructor(from: string, eventType: string) {
-      super(`Invalid content-machine transition ${from} -> ${eventType}`);
-    }
-  },
-  MockContentNotFoundError: class extends Error {
-    public readonly code = "CONTENT_NOT_FOUND";
+      constructor(from: string, eventType: string) {
+        super(`Invalid content-machine transition ${from} -> ${eventType}`);
+      }
+    },
+    MockContentNotFoundError: class extends Error {
+      public readonly code = "CONTENT_NOT_FOUND";
 
-    constructor(message: string) {
-      super(message);
-    }
-  },
-}));
+      constructor(message: string) {
+        super(message);
+      }
+    },
+  }));
 
 const { applyContentTransitionMock, inngestSendMock } = vi.hoisted(() => ({
   applyContentTransitionMock: vi.fn(),
@@ -73,25 +74,40 @@ describe("content item patch API", () => {
     applyContentTransitionMock.mockReset();
     inngestSendMock.mockReset().mockResolvedValue({ ids: ["event-1"] });
 
-    withTenantDb.mockImplementation(async (_tenantId: string, callback: (tx: unknown) => Promise<unknown>) => {
-      return callback({});
-    });
+    withTenantDb.mockImplementation(
+      async (
+        _tenantId: string,
+        callback: (tx: unknown) => Promise<unknown>,
+      ) => {
+        return callback({});
+      },
+    );
   });
 
   it("returns 409 when transition is invalid", async () => {
     const request = createPatchRequest({ action: "publish" }, "tenant-1");
 
-    applyContentTransitionMock.mockRejectedValueOnce(new MockInvalidTransitionError("draft", "APPROVE"));
+    applyContentTransitionMock.mockRejectedValueOnce(
+      new MockInvalidTransitionError("draft", "APPROVE"),
+    );
 
-    const response = await PATCH(request, { params: { id: "candidate-1" } });
+    const response = await PATCH(request, {
+      params: Promise.resolve({ id: "candidate-1" }),
+    });
     const payload = await response.json();
 
     expect(response.status).toBe(409);
-    expect(payload).toMatchObject({ error: "Invalid transition", code: "INVALID_TRANSITION" });
+    expect(payload).toMatchObject({
+      error: "Invalid transition",
+      code: "INVALID_TRANSITION",
+    });
   });
 
   it("returns idempotent true when state transition has no effect", async () => {
-    const request = createPatchRequest({ action: "publish", actor: "reviewer" }, "tenant-1");
+    const request = createPatchRequest(
+      { action: "publish", actor: "reviewer" },
+      "tenant-1",
+    );
 
     applyContentTransitionMock.mockResolvedValueOnce({
       from: "published",
@@ -112,7 +128,9 @@ describe("content item patch API", () => {
       },
     });
 
-    const response = await PATCH(request, { params: { id: "candidate-1" } });
+    const response = await PATCH(request, {
+      params: Promise.resolve({ id: "candidate-1" }),
+    });
     const payload = await response.json();
 
     expect(response.status).toBe(200);
@@ -122,9 +140,14 @@ describe("content item patch API", () => {
   });
 
   it("dispatches review decision events on approve/reject/regenerate", async () => {
-    const approveRequest = createPatchRequest({ action: "approve", actor: "human", reason: "ok" }, "tenant-1");
+    const approveRequest = createPatchRequest(
+      { action: "approve", actor: "human", reason: "ok" },
+      "tenant-1",
+    );
 
-    const response = await PATCH(approveRequest, { params: { id: "candidate-1" } });
+    const response = await PATCH(approveRequest, {
+      params: Promise.resolve({ id: "candidate-1" }),
+    });
 
     expect(response.status).toBe(202);
     expect(inngestSendMock).toHaveBeenCalledWith(

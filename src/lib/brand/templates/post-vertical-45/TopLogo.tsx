@@ -48,17 +48,17 @@ export function TopLogo({
       }}
     >
       {/* Logo at Top */}
-      <div style={{ marginBottom: SPACING.lg }}>
+      <div style={{ display: "flex", marginBottom: SPACING.lg }}>
         <LogoWatermark position="top-left" size="md" color="#000000" />
       </div>
 
       {/* Badge */}
-      <div style={{ marginBottom: SPACING.lg }}>
+      <div style={{ display: "flex", marginBottom: SPACING.lg }}>
         <BadgeSection text={section.name} bgColor={section.color} size="md" />
       </div>
 
       {/* Title */}
-      <div style={{ marginBottom: SPACING.xl }}>
+      <div style={{ display: "flex", marginBottom: SPACING.xl }}>
         <Title
           text={title}
           size="lg"
@@ -70,7 +70,7 @@ export function TopLogo({
       </div>
 
       {/* Photo */}
-      <div style={{ width: "100%" }}>
+      <div style={{ display: "flex", flex: 1, width: "100%" }}>
         <PhotoContainer
           src={photoUrl}
           alt={title}

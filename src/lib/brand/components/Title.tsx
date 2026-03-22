@@ -42,6 +42,8 @@ export function Title({
 
   // Build style object
   const style: React.CSSProperties = {
+    display: "flex",
+    flexDirection: "column",
     fontFamily: PRIMARY_FONT,
     fontWeight: fontWeight,
     fontSize: fontSize,

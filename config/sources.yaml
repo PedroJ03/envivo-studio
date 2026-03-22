@@ -138,30 +138,28 @@ sources:
       api_response_ttl: 1800 # 30 minutes
 
   # --------------------------------------------------------------------------
-  # Municipalidad de Tandil
+  # El Eco de Tandil - Espectáculos
   # --------------------------------------------------------------------------
-  - slug: tandil-municipio
-    name: "Municipalidad de Tandil"
+  - slug: el-eco-tandil
+    name: "El Eco de Tandil - Espectáculos"
     system: A
     connector: scraper
     description: |
-      Cultural events from the Tandil municipal government website.
-      Scraper for the agenda-cultural page.
+      Entertainment and music news from El Eco de Tandil newspaper.
+      Scraper for the espectaculos section covering shows, concerts, and cultural events.
     is_shared: false
     tenant_id: ${TANDIL_TENANT_ID}
     enabled: true
     priority: 2
     config:
-      # Municipal website URL
-      base_url: "https://tandil.gov.ar/agenda-cultural"
-      # CSS selectors for scraping (adjust if website changes)
+      # El Eco website URL
+      base_url: "https://www.eleco.com.ar/espectaculos/"
+      # CSS selectors for scraping
       selectors:
-        event_container: ".evento, .event-item, article.evento"
-        title: ".titulo, h2, h3, .event-title"
-        date: ".fecha, .date, time"
-        description: ".descripcion, .description, p"
-        location: ".lugar, .location, .venue"
-        link: "a[href]"
+        article_container: "article, .article, .post"
+        title: "h1, h2, .title, .titulo"
+        date: ".date, .fecha, time"
+        content: ".content, .entry-content, .descripcion"
       # Fallback date formats to try
       date_formats:
         - "%d de %B" # "15 de marzo"

@@ -690,7 +690,7 @@ export const topicSelections = pgTable(
     formats: jsonb("formats")
       .$type<
         Array<{
-          type: "post" | "story" | "reel";
+          type: "post" | "story" | "carousel"; // Note: DB enum uses "carousel" not "reel"
           tone: "informative" | "opinion" | "nostalgic" | "humorous" | "urgent";
           priority: number;
         }>

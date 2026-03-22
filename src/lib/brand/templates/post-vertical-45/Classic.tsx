@@ -77,7 +77,7 @@ export function Classic({
       </div>
 
       {/* Title */}
-      <div style={{ marginBottom: SPACING.xl }}>
+      <div style={{ display: "flex", marginBottom: SPACING.xl }}>
         <Title
           text={title}
           size="lg"
@@ -89,7 +89,13 @@ export function Classic({
       </div>
 
       {/* Photo */}
-      <div style={{ marginBottom: subtitle ? SPACING.lg : 0 }}>
+      <div
+        style={{
+          display: "flex",
+          flex: 1,
+          marginBottom: subtitle ? SPACING.lg : 0,
+        }}
+      >
         <PhotoContainer
           src={photoUrl}
           alt={title}
@@ -104,6 +110,7 @@ export function Classic({
       {subtitle && (
         <div
           style={{
+            display: "flex",
             marginTop: SPACING.md,
             marginBottom: SPACING.xl,
           }}

@@ -13,6 +13,12 @@ import {
 import { systemBBreakingFunction } from "./functions/ingest-breaking-news";
 import { systemBDailyFunction } from "./functions/ingest-daily-content";
 
+// Stage 2-3: Content Generation Function
+import { generateContentFunction } from "./functions/generate-content";
+
+// Content Approval - Brand Image Generation
+import { generateContentImageFunction } from "./functions/generate-content-image";
+
 export const functions = [scrapeEventFunction];
 
 // Foundation placeholder for future pipeline functions.
@@ -29,6 +35,12 @@ export const inngestFunctionRegistry = [
   // Content Ingestion Functions - System B (Breaking News & Daily Content)
   systemBBreakingFunction,
   systemBDailyFunction,
+
+  // Stage 2-3: Content Generation Pipeline
+  generateContentFunction,
+
+  // Content Approval - Brand Image Generation
+  generateContentImageFunction,
 ];
 
 export { inngestClient };

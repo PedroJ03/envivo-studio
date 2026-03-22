@@ -111,14 +111,19 @@ export function getTemplateDimensions(format: TemplateFormat): {
  */
 export async function loadFont(fontPath: string): Promise<ArrayBuffer> {
   try {
-    const fontModule = await import(`./fonts/${fontPath}`);
-    // If the font is exported as default
-    if (fontModule.default) {
-      return fontModule.default;
-    }
-    throw new Error(`Font ${fontPath} not found`);
+    // Read font file from public/fonts/ directory
+    const { readFile } = await import("node:fs/promises");
+    const { join } = await import("node:path");
+    const fontBuffer = await readFile(
+      join(process.cwd(), "public", "fonts", fontPath),
+    );
+    // Convert Buffer to ArrayBuffer
+    return fontBuffer.buffer.slice(
+      fontBuffer.byteOffset,
+      fontBuffer.byteOffset + fontBuffer.byteLength,
+    );
   } catch (error) {
-    console.warn(`Failed to load font ${fontPath}, using fallback`);
+    console.warn(`Failed to load font ${fontPath}, using fallback`, error);
     return new ArrayBuffer(0);
   }
 }

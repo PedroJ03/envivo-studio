@@ -58,7 +58,7 @@ describe("Conflict Resolution", () => {
         isShared: true,
         metadata: {},
         eventType: "historical",
-        eventDate: new Date("2024-03-21"),
+        eventDate: "2024-03-21",
         priority: 3,
         updatedAt: new Date(),
       };
@@ -73,7 +73,7 @@ describe("Conflict Resolution", () => {
         isShared: true,
         metadata: {},
         eventType: "concert",
-        eventDate: new Date("2024-12-15"),
+        eventDate: "2024-12-15",
         priority: 1,
       };
 
@@ -94,7 +94,7 @@ describe("Conflict Resolution", () => {
         isShared: true,
         metadata: {},
         eventType: "concert",
-        eventDate: new Date("2024-12-15"),
+        eventDate: "2024-12-15",
         priority: 2,
         updatedAt: new Date(),
       };
@@ -109,7 +109,7 @@ describe("Conflict Resolution", () => {
         isShared: true,
         metadata: {},
         eventType: "concert",
-        eventDate: new Date("2024-12-15"),
+        eventDate: "2024-12-15",
         priority: 2,
       };
 
@@ -130,7 +130,7 @@ describe("Conflict Resolution", () => {
         isShared: true,
         metadata: {},
         eventType: "historical",
-        eventDate: new Date(),
+        eventDate: "2024-03-15",
         description: "Short",
         priority: 3,
         updatedAt: new Date(),
@@ -146,7 +146,7 @@ describe("Conflict Resolution", () => {
         isShared: true,
         metadata: {},
         eventType: "concert",
-        eventDate: new Date(),
+        eventDate: "2024-03-15",
         description: "This is a much longer and more detailed description",
         priority: 1,
       };
@@ -170,7 +170,7 @@ describe("Conflict Resolution", () => {
         isShared: true,
         metadata: {},
         eventType: "concert",
-        eventDate: new Date("2024-12-15"),
+        eventDate: "2024-12-15",
         artists: [{ name: "Artist 1", normalizedName: "artist-1" }],
         priority: 1,
         updatedAt: new Date(),
@@ -186,7 +186,7 @@ describe("Conflict Resolution", () => {
         isShared: true,
         metadata: {},
         eventType: "concert",
-        eventDate: new Date("2024-12-15"),
+        eventDate: "2024-12-15",
         artists: [{ name: "Artist 2", normalizedName: "artist-2" }],
         priority: 2,
       };
@@ -210,7 +210,7 @@ describe("Conflict Resolution", () => {
         isShared: true,
         metadata: {},
         eventType: "historical",
-        eventDate: new Date(),
+        eventDate: "2024-03-15",
         location: { city: "Buenos Aires" },
         priority: 3,
         updatedAt: new Date(),
@@ -226,7 +226,7 @@ describe("Conflict Resolution", () => {
         isShared: true,
         metadata: {},
         eventType: "concert",
-        eventDate: new Date("2024-12-15"),
+        eventDate: "2024-12-15",
         location: {
           city: "CABA",
           region: "CABA",
@@ -255,7 +255,7 @@ describe("Conflict Resolution", () => {
         isShared: true,
         metadata: {},
         eventType: "historical",
-        eventDate: new Date(),
+        eventDate: "2024-03-15",
         images: [{ url: "http://existing-image.jpg", source: "wikimedia" }],
         priority: 3,
         updatedAt: new Date(),
@@ -271,7 +271,7 @@ describe("Conflict Resolution", () => {
         isShared: true,
         metadata: {},
         eventType: "concert",
-        eventDate: new Date(),
+        eventDate: "2024-03-15",
         images: [{ url: "http://incoming-image.jpg", source: "ticketmaster" }],
         priority: 1,
       };
@@ -295,7 +295,7 @@ describe("Conflict Resolution", () => {
         isShared: true,
         metadata: {},
         eventType: "concert",
-        eventDate: new Date(),
+        eventDate: "2024-03-15",
         tags: ["rock", "concert"],
         priority: 1,
         updatedAt: new Date(),
@@ -311,7 +311,7 @@ describe("Conflict Resolution", () => {
         isShared: true,
         metadata: {},
         eventType: "concert",
-        eventDate: new Date(),
+        eventDate: "2024-03-15",
         tags: ["rock", "festival", "buenos-aires"],
         priority: 2,
       };
@@ -338,7 +338,7 @@ describe("Conflict Resolution", () => {
         isShared: true,
         metadata: {},
         eventType: "historical",
-        eventDate: new Date(),
+        eventDate: "2024-03-15",
         priority: 3,
         updatedAt: new Date(),
       };
@@ -353,7 +353,7 @@ describe("Conflict Resolution", () => {
         isShared: true,
         metadata: {},
         eventType: "concert",
-        eventDate: new Date(),
+        eventDate: "2024-03-15",
         priority: 2,
       };
 
@@ -374,7 +374,7 @@ describe("Conflict Resolution", () => {
         isShared: true,
         metadata: {},
         eventType: "concert",
-        eventDate: new Date(),
+        eventDate: "2024-03-15",
         priority: 1,
         updatedAt: new Date(),
       };
@@ -389,7 +389,7 @@ describe("Conflict Resolution", () => {
         isShared: true,
         metadata: {},
         eventType: "concert",
-        eventDate: new Date(),
+        eventDate: "2024-03-15",
         priority: 2,
       };
 
@@ -417,7 +417,7 @@ describe("Conflict Resolution", () => {
         isShared: true,
         metadata: {},
         eventType: "concert",
-        eventDate: new Date(),
+        eventDate: "2024-03-15",
         priority: 1,
         updatedAt: new Date("2024-01-01"),
       };
@@ -432,7 +432,7 @@ describe("Conflict Resolution", () => {
         isShared: true,
         metadata: {},
         eventType: "concert",
-        eventDate: new Date(),
+        eventDate: "2024-03-15",
         priority: 2,
       };
 

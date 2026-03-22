@@ -232,7 +232,7 @@ export function checkHashMatch(
 
   return {
     found: true,
-    existingEvent: hashMatch,
+    existingEvent: hashMatchEvent,
     matchType: "hash",
     confidence: 0.95, // Hash match is high confidence
   };

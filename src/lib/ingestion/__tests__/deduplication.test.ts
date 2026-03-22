@@ -47,7 +47,7 @@ function createMockEvent(
     isShared: true,
     metadata: {},
     eventType: "concert",
-    eventDate: new Date("2024-12-15"),
+    eventDate: "2024-12-15",
     year: undefined,
     location: {
       city: "Buenos Aires",
@@ -75,7 +75,7 @@ describe("Deduplication Engine", () => {
       const newEvent = {
         source: "ticketmaster",
         sourceId: "evt-123",
-        eventDate: new Date("2024-12-15"),
+        eventDate: "2024-12-15",
       };
 
       const result = checkExactMatch(existingEvents, newEvent);
@@ -93,7 +93,7 @@ describe("Deduplication Engine", () => {
       const newEvent = {
         source: "eventbrite",
         sourceId: "evt-999",
-        eventDate: new Date("2024-12-15"),
+        eventDate: "2024-12-15",
       };
 
       const result = checkExactMatch(existingEvents, newEvent);
@@ -107,7 +107,7 @@ describe("Deduplication Engine", () => {
           source: "wikimedia",
           sourceId: "wik-1969",
           eventType: "historical",
-          eventDate: new Date("1969-03-21"),
+          eventDate: "1969-03-21",
         }),
       ];
 
@@ -115,7 +115,7 @@ describe("Deduplication Engine", () => {
       const newEvent = {
         source: "wikimedia",
         sourceId: "wik-1969",
-        eventDate: new Date("2024-03-21"),
+        eventDate: "2024-03-21",
       };
 
       const result = checkExactMatch(
@@ -147,7 +147,7 @@ describe("Deduplication Engine", () => {
 
       const newEvent = {
         contentHash,
-        eventDate: new Date("2024-12-15"),
+        eventDate: "2024-12-15",
       };
 
       const result = checkHashMatch(existingEvents, newEvent);
@@ -174,7 +174,7 @@ describe("Deduplication Engine", () => {
           source: "ticketmaster",
           sourceId: "evt-999",
         }),
-        eventDate: new Date("2024-12-15"),
+        eventDate: "2024-12-15",
       };
 
       const result = checkHashMatch(existingEvents, newEvent);
@@ -194,14 +194,14 @@ describe("Deduplication Engine", () => {
           source: "ticketmaster",
           sourceId: "evt-old",
           contentHash,
-          eventDate: new Date("2024-01-01"),
+          eventDate: "2024-01-01",
         }),
       ];
 
       // Same hash but different date - outside 30 day window
       const newEvent = {
         contentHash,
-        eventDate: new Date("2024-12-15"),
+        eventDate: "2024-12-15",
       };
 
       const result = checkHashMatch(existingEvents, newEvent, 30);
@@ -217,7 +217,7 @@ describe("Deduplication Engine", () => {
           source: "ticketmaster",
           sourceId: "tm-123",
           title: "The Beatles Live Concert",
-          eventDate: new Date("2024-12-15"),
+          eventDate: "2024-12-15",
           artists: [{ name: "The Beatles", normalizedName: "beatles" }],
           location: { venue: "Luna Park" },
         }),
@@ -225,7 +225,7 @@ describe("Deduplication Engine", () => {
 
       const newEvent = {
         title: "Beatles Concert",
-        eventDate: new Date("2024-12-15"),
+        eventDate: "2024-12-15",
         artists: [{ name: "The Beatles", normalizedName: "beatles" }],
         location: { venue: "Luna Park" },
         eventType: "concert" as const,
@@ -249,14 +249,14 @@ describe("Deduplication Engine", () => {
           source: "eventbrite",
           sourceId: "eb-456",
           title: "Rock Concert",
-          eventDate: new Date("2024-12-15"),
+          eventDate: "2024-12-15",
           location: { venue: "Teatro Gran Rex" },
         }),
       ];
 
       const newEvent = {
         title: "Rock Concert",
-        eventDate: new Date("2024-12-15"),
+        eventDate: "2024-12-15",
         artists: [],
         location: { venue: "Teatro Gran Rex Buenos Aires" },
         eventType: "concert" as const,
@@ -279,14 +279,14 @@ describe("Deduplication Engine", () => {
           source: "ticketmaster",
           sourceId: "tm-123",
           title: "Jazz Festival",
-          eventDate: new Date("2024-12-15"),
+          eventDate: "2024-12-15",
           location: { venue: "Luna Park" },
         }),
       ];
 
       const newEvent = {
         title: "Rock Concert",
-        eventDate: new Date("2024-12-15"),
+        eventDate: "2024-12-15",
         artists: [{ name: "Rock Band", normalizedName: "rock-band" }],
         location: { venue: "Different Venue" },
         eventType: "concert" as const,
@@ -310,13 +310,13 @@ describe("Deduplication Engine", () => {
           sourceId: "tm-fest",
           title: "Lollapalooza Argentina 2024",
           eventType: "festival",
-          eventDate: new Date("2024-03-15"),
+          eventDate: "2024-03-15",
         }),
       ];
 
       const newFestivalEvent = {
         title: "Lollapalooza Argentina",
-        eventDate: new Date("2024-03-15"),
+        eventDate: "2024-03-15",
         artists: [],
         eventType: "festival" as const,
       };
@@ -343,7 +343,7 @@ describe("Deduplication Engine", () => {
         sourceId: "evt-123",
         contentHash: "different-hash",
         title: "Different Title",
-        eventDate: new Date("2024-12-15"),
+        eventDate: "2024-12-15",
       };
 
       const result = runDeduplicationTiers(existingEvents, newEvent);
@@ -372,7 +372,7 @@ describe("Deduplication Engine", () => {
         sourceId: "evt-999",
         contentHash,
         title: "Different Title",
-        eventDate: new Date("2024-12-15"),
+        eventDate: "2024-12-15",
       };
 
       const result = runDeduplicationTiers(existingEvents, newEvent);
@@ -387,7 +387,7 @@ describe("Deduplication Engine", () => {
           source: "eventbrite",
           sourceId: "eb-456",
           title: "The Beatles Concert",
-          eventDate: new Date("2024-12-15"),
+          eventDate: "2024-12-15",
           artists: [{ name: "The Beatles", normalizedName: "beatles" }],
           location: { venue: "Luna Park" },
         }),
@@ -398,7 +398,7 @@ describe("Deduplication Engine", () => {
         sourceId: "evt-999",
         contentHash: "different-hash",
         title: "Beatles Live",
-        eventDate: new Date("2024-12-15"),
+        eventDate: "2024-12-15",
         artists: [{ name: "The Beatles", normalizedName: "beatles" }],
         location: { venue: "Luna Park" },
         eventType: "concert" as const,
@@ -416,7 +416,7 @@ describe("Deduplication Engine", () => {
           source: "ticketmaster",
           sourceId: "evt-123",
           title: "Jazz Concert",
-          eventDate: new Date("2024-12-15"),
+          eventDate: "2024-12-15",
         }),
       ];
 
@@ -425,7 +425,7 @@ describe("Deduplication Engine", () => {
         sourceId: "evt-999",
         contentHash: "different-hash",
         title: "Rock Concert",
-        eventDate: new Date("2024-12-20"),
+        eventDate: "2024-12-20",
         artists: [{ name: "Rock Band", normalizedName: "rock-band" }],
         location: { venue: "Different Venue" },
         eventType: "concert" as const,

@@ -7,9 +7,9 @@ import { contentStates } from "@/lib/db/schema";
 import { tenantFilter } from "@/lib/db/tenant";
 
 type RouteContext = {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 };
 
 export async function GET(request: NextRequest, context: RouteContext) {
@@ -22,6 +22,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
     );
   }
 
+  const { id } = await context.params;
+
   try {
     const history = await withTenantDb(tenantId, async (tx) => {
       const rows = await tx
@@ -29,7 +31,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
         .from(contentStates)
         .where(
           and(
-            eq(contentStates.candidateContentId, context.params.id),
+            eq(contentStates.candidateContentId, id),
             tenantFilter(contentStates.tenantId),
           ),
         )

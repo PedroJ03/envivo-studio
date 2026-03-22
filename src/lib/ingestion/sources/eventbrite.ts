@@ -272,9 +272,7 @@ export class EventbriteConnector extends BaseConnector<NormalizedEvent> {
         .sort()
         .join("|") || "";
     const venueKey = item.location?.venue || "";
-    return this.hashString(
-      `${artistKey}|${item.eventDate.toISOString().split("T")[0]}|${venueKey}`,
-    );
+    return this.hashString(`${artistKey}|${item.eventDate}|${venueKey}`);
   }
 
   /**
@@ -395,17 +393,17 @@ export class EventbriteConnector extends BaseConnector<NormalizedEvent> {
   /**
    * Parse event date from Eventbrite event.
    */
-  private parseEventDate(event: EventbriteEvent): Date {
+  private parseEventDate(event: EventbriteEvent): string {
     const localDateStr = event.start?.local;
 
     if (!localDateStr) {
-      return new Date();
+      return new Date().toISOString().split("T")[0];
     }
 
     try {
-      return new Date(localDateStr);
+      return new Date(localDateStr).toISOString().split("T")[0];
     } catch {
-      return new Date();
+      return new Date().toISOString().split("T")[0];
     }
   }
 

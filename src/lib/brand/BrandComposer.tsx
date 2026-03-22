@@ -4,8 +4,7 @@
 // ============================================================================
 
 import { readFileSync } from "node:fs";
-import { join, dirname } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
 import * as React from "react";
 
 import type { BrandSection, TemplateFormat } from "./types";
@@ -55,10 +54,8 @@ export interface BrandComposeOutput {
 // Font Loading
 // ----------------------------------------------------------------------------
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const FONTS_DIR = join(__dirname, "fonts");
+// Ruta a las fuentes (en carpeta public para evitar problemas con Turbopack)
+const FONTS_DIR = join(process.cwd(), "public", "fonts");
 
 // Cache para las fuentes cargadas
 let fontCache: {
@@ -69,6 +66,7 @@ let fontCache: {
 /**
  * Carga las fuentes Syne para Satori.
  * Usa cache para evitar lecturas repetidas.
+ * NOTA: Esta función solo debe llamarse en runtime (server-side), no en build time.
  */
 function loadFonts(): BrandComposeOutput["fonts"] {
   // Devolver desde cache si ya está cargado

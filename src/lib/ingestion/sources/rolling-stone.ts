@@ -1,8 +1,14 @@
 /**
  * Rolling Stone Connector - System B
  *
+ * ⚠️ DEPRECATED: This connector is deprecated in favor of LaNacionRSSConnector.
+ * The Rolling Stone feed has been empty for some time and now redirects to La Nación.
+ * Use `createLaNacionRSSConnector` from `./lanacion-rss` instead.
+ *
  * Scrapes music news from Rolling Stone Argentina.
  * Source: https://www.rollingstone.com.ar/feed
+ *
+ * @deprecated Use LaNacionRSSConnector instead
  */
 
 import { BaseConnector } from "../base-connector";

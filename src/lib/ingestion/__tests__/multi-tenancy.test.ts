@@ -207,35 +207,35 @@ describe("Multi-tenancy Utilities", () => {
       {
         tenantId: "tenant-a",
         isShared: false,
-        eventDate: new Date("2024-06-15"),
+        eventDate: "2024-06-15",
         eventType: "concert" as EventType,
         source: "ticketmaster",
       },
       {
         tenantId: "tenant-a",
         isShared: false,
-        eventDate: new Date("2024-07-01"),
+        eventDate: "2024-07-01",
         eventType: "festival" as EventType,
         source: "eventbrite",
       },
       {
         tenantId: "tenant-a",
         isShared: false,
-        eventDate: new Date("2024-08-01"),
+        eventDate: "2024-08-01",
         eventType: "local_event" as EventType, // Not in eventTypes filter
         source: "tandil_municipio",
       },
       {
         tenantId: null,
         isShared: true,
-        eventDate: new Date("2024-06-20"),
+        eventDate: "2024-06-20",
         eventType: "concert" as EventType,
         source: "ticketmaster",
       },
       {
         tenantId: "tenant-b",
         isShared: false,
-        eventDate: new Date("2024-06-15"),
+        eventDate: "2024-06-15",
         eventType: "concert" as EventType,
         source: "ticketmaster",
       },
@@ -287,7 +287,7 @@ describe("Multi-tenancy Utilities", () => {
         const wikimediaEvent = {
           tenantId: "tenant-a",
           isShared: false,
-          eventDate: new Date("2024-06-15"),
+          eventDate: "2024-06-15",
           eventType: "historical" as EventType,
           source: "wikimedia", // Not in sources filter
         };

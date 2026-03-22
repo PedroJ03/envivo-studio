@@ -75,6 +75,5 @@ export const signIn = handler.signIn;
 export const signOut = handler.signOut;
 
 // Export GET and POST handlers for App Router
-// Cast to any to bypass strict type checking with Next.js 16
-export const GET = handler.GET as any;
-export const POST = handler.POST as any;
+export const GET = (request: NextRequest) => handler.GET(request);
+export const POST = (request: NextRequest) => handler.POST(request);

@@ -1,7 +1,7 @@
 /**
  * System A Orchestrator
  *
- * Coordinates all System A connectors (Wikimedia, Ticketmaster, Eventbrite, Tandil, RSS).
+ * Coordinates all System A connectors (Wikimedia, Ticketmaster, Eventbrite, El Eco, RSS).
  * Runs deduplication against existing events and stores normalized events to database.
  *
  * @module ingestion/system-a-orchestrator
@@ -14,7 +14,7 @@ import type { NormalizedEvent, RawEvent } from "./types";
 import { WikimediaOnThisDayConnector } from "./sources/wikimedia-otd";
 import { TicketmasterConnector } from "./sources/ticketmaster";
 import { EventbriteConnector } from "./sources/eventbrite";
-import { TandilMunicipioConnector } from "./sources/tandil-municipio";
+import { ElEcoTandilConnector } from "./sources/el-eco-tandil";
 import { RSSFeedConnector, RSS_FEEDS } from "./sources/rss-feeds";
 import { IngestionCache } from "./cache";
 
@@ -66,8 +66,8 @@ function createConnector(
     case "eventbrite":
       return new EventbriteConnector();
 
-    case "tandil_municipio":
-      return new TandilMunicipioConnector();
+    case "el_eco_tandil":
+      return new ElEcoTandilConnector();
 
     case "eldiario_rss":
       return new RSSFeedConnector("eldiario");
@@ -86,7 +86,7 @@ export function getSystemASources(): string[] {
     "wikimedia",
     "ticketmaster",
     "eventbrite",
-    "tandil_municipio",
+    "el_eco_tandil",
     "eldiario_rss",
   ];
 }
@@ -298,10 +298,7 @@ export class SystemAOrchestrator {
    * Store an event to the database.
    */
   private async storeEvent(event: NormalizedEvent): Promise<void> {
-    const eventDate =
-      event.eventDate instanceof Date
-        ? event.eventDate.toISOString().split("T")[0]
-        : event.eventDate;
+    const eventDate = event.eventDate;
 
     await db.insert(calendarEvents).values({
       source: event.source,

@@ -285,9 +285,7 @@ export class TicketmasterConnector extends BaseConnector<NormalizedEvent> {
         .sort()
         .join("|") || "";
     const venueKey = item.location?.venue || "";
-    return this.hashString(
-      `${artistKey}|${item.eventDate.toISOString().split("T")[0]}|${venueKey}`,
-    );
+    return this.hashString(`${artistKey}|${item.eventDate}|${venueKey}`);
   }
 
   /**
@@ -419,19 +417,14 @@ export class TicketmasterConnector extends BaseConnector<NormalizedEvent> {
   /**
    * Parse event date from Ticketmaster event.
    */
-  private parseEventDate(event: TicketmasterEvent): Date {
+  private parseEventDate(event: TicketmasterEvent): string {
     const dateStr = event.dates?.start?.localDate;
-    const timeStr = event.dates?.start?.localTime;
 
     if (!dateStr) {
-      return new Date();
+      return new Date().toISOString().split("T")[0];
     }
 
-    if (timeStr) {
-      return new Date(`${dateStr}T${timeStr}`);
-    }
-
-    return new Date(dateStr);
+    return dateStr;
   }
 
   /**

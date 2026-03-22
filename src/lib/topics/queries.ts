@@ -27,6 +27,16 @@ import type {
 // Phase 1 (migration + schema) must be applied before using these queries
 
 /**
+ * DB-compatible format type for topic selections.
+ * Note: DB uses "carousel" not "reel" - this type reflects the actual DB schema.
+ */
+type DbFormatConfig = {
+  type: "post" | "story" | "carousel";
+  tone: "informative" | "opinion" | "nostalgic" | "humorous" | "urgent";
+  priority: number;
+};
+
+/**
  * Get pending topics from both calendar_events and content_feed_items
  * Excludes topics that have already been selected or discarded by the tenant
  *
@@ -184,7 +194,7 @@ export async function createTopicSelection(
           tenantId,
           sourceType: input.sourceType,
           sourceId: input.sourceId,
-          formats: input.formats as FormatConfig[],
+          formats: input.formats as DbFormatConfig[],
           targetPublishAt: input.targetPublishAt
             ? new Date(input.targetPublishAt)
             : null,

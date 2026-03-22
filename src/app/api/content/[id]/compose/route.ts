@@ -32,12 +32,16 @@ type ComposeRouteResponse = {
 };
 
 type RouteContext = {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 };
 
-function buildInput(raw: ComposeRouteInput, tenantId: string, candidateContentId: string): ComposerComposeInput {
+function buildInput(
+  raw: ComposeRouteInput,
+  tenantId: string,
+  candidateContentId: string,
+): ComposerComposeInput {
   return {
     tenantId,
     candidateContentId,
@@ -51,7 +55,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
   if (!tenantId) {
     return NextResponse.json(
-      { error: "Tenant context is required. Send x-tenant-id header or tenant_id query param." },
+      {
+        error:
+          "Tenant context is required. Send x-tenant-id header or tenant_id query param.",
+      },
       { status: 401 },
     );
   }
@@ -67,7 +74,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
   }
 
   try {
-    const output = await composeCandidate(buildInput(parsed.data, tenantId, context.params.id));
+    const { id } = await context.params;
+    const output = await composeCandidate(
+      buildInput(parsed.data, tenantId, id),
+    );
 
     const response: ComposeRouteResponse = {
       ok: true,
@@ -86,13 +96,16 @@ export async function POST(request: NextRequest, context: RouteContext) {
     return NextResponse.json(response, { status: 200 });
   } catch (error) {
     if (
-      error instanceof ComposerPhotoResolutionError
-      || error instanceof ComposerCandidateNotFoundError
-      || error instanceof ComposerPhotoNotFoundError
+      error instanceof ComposerPhotoResolutionError ||
+      error instanceof ComposerCandidateNotFoundError ||
+      error instanceof ComposerPhotoNotFoundError
     ) {
       const status = error instanceof ComposerPhotoResolutionError ? 400 : 404;
 
-      return NextResponse.json({ error: error.message, code: error.code }, { status });
+      return NextResponse.json(
+        { error: error.message, code: error.code },
+        { status },
+      );
     }
 
     return NextResponse.json(

@@ -59,7 +59,7 @@ export function BadgeSection({
     <div
       className={className}
       style={{
-        display: "inline-flex",
+        display: "flex",
         alignItems: "center",
         justifyContent: "center",
         backgroundColor: bgColor,

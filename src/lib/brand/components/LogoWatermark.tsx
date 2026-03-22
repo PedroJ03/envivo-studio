@@ -2,20 +2,14 @@
 // Logo Watermark Component - envivo.
 // ============================================================================
 //
-// Inline SVG logo with editorial minimalist style inspired by Filo.news.
-// The final dot "." is the characteristic seal.
-//
-// Design:
-// - Text "envivo" in Syne Bold (sans-serif, editorial)
-// - Final dot "." in position of emphasis
-// - Black #000000 on light backgrounds
-// - White #FFFFFF on dark backgrounds
+// Simplified logo for Satori compatibility.
+// Uses div with text instead of SVG text (Satori doesn't support SVG text nodes).
 //
 // Usage in Satori (React-style JSX):
 //   <LogoWatermark position="bottom-right" size="md" />
 
 import type { LogoWatermarkProps } from "../types";
-import { LOGO_SVG, LOGO_SVG_LIGHT } from "../config";
+import { PRIMARY_FONT } from "../config";
 
 // ----------------------------------------------------------------------------
 // Component
@@ -28,21 +22,26 @@ export function LogoWatermark({
   color,
   className,
 }: LogoWatermarkProps) {
-  // Determine which logo to use based on color prop
-  const logoContent = color === "#FFFFFF" ? LOGO_SVG_LIGHT : LOGO_SVG;
+  // Determine which color to use
+  const fillColor = color === "#FFFFFF" ? "#FFFFFF" : "#000000";
 
   // Size mapping
   const sizeMap = {
-    sm: { width: 80, height: variant === "vertical" ? 60 : 20 },
-    md: { width: 120, height: variant === "vertical" ? 90 : 30 },
-    lg: { width: 160, height: variant === "vertical" ? 120 : 40 },
+    sm: { fontSize: 16, dotSize: 6 },
+    md: { fontSize: 20, dotSize: 8 },
+    lg: { fontSize: 24, dotSize: 10 },
   };
 
   const dimensions = sizeMap[size];
 
   // Position styles based on position prop
   const getPositionStyles = (): React.CSSProperties => {
-    const base: React.CSSProperties = { position: "absolute" };
+    const base: React.CSSProperties = {
+      position: "absolute",
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+    };
 
     switch (position) {
       case "bottom-right":
@@ -63,12 +62,25 @@ export function LogoWatermark({
       className={className}
       style={{
         ...getPositionStyles(),
-        width: dimensions.width,
-        height: dimensions.height,
+        fontFamily: PRIMARY_FONT,
+        fontSize: dimensions.fontSize,
+        fontWeight: 700,
+        color: fillColor,
+        letterSpacing: "-0.5px",
         pointerEvents: "none",
       }}
-      dangerouslySetInnerHTML={{ __html: logoContent }}
-    />
+    >
+      <span>envivo</span>
+      <span
+        style={{
+          display: "flex",
+          width: dimensions.dotSize,
+          height: dimensions.dotSize,
+          borderRadius: dimensions.dotSize / 2,
+          backgroundColor: fillColor,
+        }}
+      />
+    </div>
   );
 }
 
@@ -76,4 +88,7 @@ export function LogoWatermark({
 // SVG Logo Export (for direct use)
 // ----------------------------------------------------------------------------
 
-export { LOGO_SVG, LOGO_SVG_LIGHT };
+// For backwards compatibility, export empty strings
+// Components should use the LogoWatermark component instead
+export const LOGO_SVG = "";
+export const LOGO_SVG_LIGHT = "";

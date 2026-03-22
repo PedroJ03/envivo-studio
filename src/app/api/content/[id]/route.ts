@@ -9,7 +9,10 @@ import {
   InvalidTransitionError,
   type ContentTransitionPayload,
 } from "@/lib/pipeline/store";
-import { PIPELINE_START_EVENT, REVIEW_DECISION_EVENT } from "@/inngest/functions/pipeline";
+import {
+  PIPELINE_START_EVENT,
+  REVIEW_DECISION_EVENT,
+} from "@/inngest/functions/pipeline";
 import { inngestClient } from "@/inngest/client";
 import type { ContentMachineEvent } from "@/lib/pipeline/machine";
 
@@ -32,12 +35,14 @@ const patchActionSchema = z.object({
 });
 
 type RouteContext = {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 };
 
-function toMachineEvent(action: z.infer<typeof patchActionSchema>["action"]): ContentMachineEvent {
+function toMachineEvent(
+  action: z.infer<typeof patchActionSchema>["action"],
+): ContentMachineEvent {
   switch (action) {
     case "submit":
       return { type: "SUBMIT_FOR_REVIEW" };
@@ -72,7 +77,12 @@ function toDecisionPayload(body: {
   return {
     tenantId: body.tenantId,
     candidateContentId: body.candidateContentId,
-    decision: body.action === "approve" ? "approve" : body.action === "reject" ? "reject" : "regenerate",
+    decision:
+      body.action === "approve"
+        ? "approve"
+        : body.action === "reject"
+          ? "reject"
+          : "regenerate",
     actor: body.actor,
     reason: body.reason,
   };
@@ -83,10 +93,15 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
   if (!tenantId) {
     return NextResponse.json(
-      { error: "Tenant context is required. Send x-tenant-id header or tenant_id query param." },
+      {
+        error:
+          "Tenant context is required. Send x-tenant-id header or tenant_id query param.",
+      },
       { status: 401 },
     );
   }
+
+  const { id } = await context.params;
 
   const rawBody = await request.json().catch(() => ({}));
   const parsed = patchActionSchema.safeParse(rawBody);
@@ -108,17 +123,20 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       name: PIPELINE_START_EVENT,
       data: {
         tenantId,
-        candidateContentId: context.params.id,
+        candidateContentId: id,
         actor,
         timeoutMs,
       },
-      });
+    });
 
-    return NextResponse.json({
-      ok: true,
-      action: "start_review",
-      eventId: reviewEvent.ids?.[0] ?? null,
-    }, { status: 202 });
+    return NextResponse.json(
+      {
+        ok: true,
+        action: "start_review",
+        eventId: reviewEvent.ids?.[0] ?? null,
+      },
+      { status: 202 },
+    );
   }
 
   if (action === "approve" || action === "reject" || action === "regenerate") {
@@ -129,15 +147,18 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         actor,
         reason,
         tenantId,
-        candidateContentId: context.params.id,
+        candidateContentId: id,
       }),
     });
 
-    return NextResponse.json({
-      ok: true,
-      action,
-      eventId: reviewDecisionEvent.ids?.[0] ?? null,
-    }, { status: 202 });
+    return NextResponse.json(
+      {
+        ok: true,
+        action,
+        eventId: reviewDecisionEvent.ids?.[0] ?? null,
+      },
+      { status: 202 },
+    );
   }
 
   try {
@@ -145,7 +166,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     const transition = await withTenantDb(tenantId, (tx) => {
       const payload: ContentTransitionPayload = {
         tenantId,
-        candidateContentId: context.params.id,
+        candidateContentId: id,
         actor,
         reason,
         event,
@@ -170,9 +191,15 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     }
 
     if (error instanceof ContentNotFoundError) {
-      return NextResponse.json({ error: error.message, code: error.code }, { status: 404 });
+      return NextResponse.json(
+        { error: error.message, code: error.code },
+        { status: 404 },
+      );
     }
 
-    return NextResponse.json({ error: "Failed to apply transition", details: `${error}` }, { status: 502 });
+    return NextResponse.json(
+      { error: "Failed to apply transition", details: `${error}` },
+      { status: 502 },
+    );
   }
 }

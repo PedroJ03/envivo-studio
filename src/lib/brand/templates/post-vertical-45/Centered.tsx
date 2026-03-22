@@ -51,16 +51,17 @@ export function Centered({
       }}
     >
       {/* Centered Badge */}
-      <div style={{ marginBottom: SPACING.xxl }}>
+      <div style={{ display: "flex", marginBottom: SPACING.xxl }}>
         <BadgeSection text={section.name} bgColor={section.color} size="md" />
       </div>
 
       {/* Spacer for vertical balance */}
-      <div style={{ flex: 0.5 }} />
+      <div style={{ display: "flex", flex: 0.5 }} />
 
       {/* Centered Title */}
       <div
         style={{
+          display: "flex",
           marginBottom: SPACING.xxl,
           textAlign: "center",
           width: "100%",
@@ -77,7 +78,14 @@ export function Centered({
       </div>
 
       {/* Photo */}
-      <div style={{ width: "100%", marginBottom: SPACING.lg }}>
+      <div
+        style={{
+          display: "flex",
+          flex: 1,
+          width: "100%",
+          marginBottom: SPACING.lg,
+        }}
+      >
         <PhotoContainer
           src={photoUrl}
           alt={title}

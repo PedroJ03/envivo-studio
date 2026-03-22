@@ -7,6 +7,10 @@ import { z } from "zod";
 import { createTopicSelection } from "@/lib/topics/queries";
 import { TENANT_HEADER } from "@/proxy";
 import { getTenantIdBySlug } from "@/lib/db/tenant";
+import {
+  generateContentFromSelection,
+  isGenerationEnabled,
+} from "@/lib/generation";
 
 /**
  * Resolves tenant ID from request.
@@ -56,7 +60,7 @@ const selectSchema = z.object({
   formats: z.array(formatSchema).min(1),
   targetPublishAt: z.string().datetime().optional(),
   urgency: z.enum(["low", "medium", "high", "breaking"]).optional(),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.any()).optional(),
 });
 
 // Mock user ID for now - in production this would come from session
@@ -88,7 +92,36 @@ export async function POST(request: NextRequest) {
       MOCK_USER_ID,
       parsed.data,
     );
-    return NextResponse.json(result, { status: 201 });
+
+    // Trigger content generation if pipeline is enabled
+    let generationResult = null;
+    if (isGenerationEnabled()) {
+      try {
+        generationResult = await generateContentFromSelection(
+          result.selectionId,
+          { emitEvent: true },
+        );
+      } catch (genError) {
+        // Log but don't fail the request - generation is async
+        console.error(
+          "[POST /api/topics/select] generation trigger failed:",
+          genError,
+        );
+      }
+    }
+
+    return NextResponse.json(
+      {
+        ...result,
+        generation: generationResult
+          ? {
+              status: generationResult.status,
+              candidatesCount: generationResult.candidates.length,
+            }
+          : null,
+      },
+      { status: 201 },
+    );
   } catch (error: any) {
     if (error.message === "Topic already selected") {
       return NextResponse.json(

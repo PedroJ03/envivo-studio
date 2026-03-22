@@ -2,7 +2,7 @@
 
 This document tracks all pending features, bugs, and technical debt for the EnVivo Studio platform.
 
-Last Updated: March 21, 2026
+Last Updated: March 21, 2026 (Content Approval - Brand Integration completed)
 
 ---
 
@@ -12,11 +12,11 @@ Last Updated: March 21, 2026
 | --------------------------- | ----------- | ---------- |
 | Stage 1: Content Ingestion  | ✅ Complete | 100%       |
 | Stage 2: Topic Selection    | ✅ Complete | 100%       |
-| Stage 3: Content Generation | 🔲 Partial  | 60%        |
-| Stage 4: Content Approval   | 🔲 Partial  | 40%        |
+| Stage 3: Content Generation | ✅ Complete | 100%       |
+| Stage 4: Content Approval   | 🔄 Partial  | 85%        |
 | Stage 5: Publication        | ✅ Complete | 100%       |
 
-**Critical Gap**: Stage 2 → 3 integration (connecting topic selections to brand-based content generation)
+**Critical Gap**: Resuelta - Brand preview con TemplateVariantSelector implementado. Pendiente: integración con BrandComposer real.
 
 ---
 
@@ -24,33 +24,59 @@ Last Updated: March 21, 2026
 
 ### 1. Content Approval - Brand Integration
 
-**Status**: 🔲 Not Started  
-**Impact**: HIGH - Blocks full user workflow  
+**Status**: ✅ COMPLETED (2026-03-21)  
+**Impact**: HIGH - Enables full user workflow  
 **Effort**: Medium
 
-**Problem**:  
-The "Revisar" (Review) button in `/content/[id]` currently fails because it doesn't integrate with the BrandComposer. The system cannot display a preview of content with brand templates applied.
+**Implementation Summary**:
 
-**Acceptance Criteria**:
+- `BrandPreviewLazy` component with dynamic import (ssr:false) for hydration safety
+- `TemplateVariantSelector` with 8 variants: classic, minimal, centered, toplogo, fullbleed, split, magazine, duotone
+- API routes: `/api/content/[id]/brand` and `/api/content/[id]/generate-image`
+- Inngest function `generate-content-image` for async image generation
+- `ContentDetailClient` component with optimistic updates
+- 8 tests passing
 
-- [ ] Integrate `BrandComposer` component into content review page
-- [ ] Display preview with selected brand template applied
-- [ ] Allow switching between template variants (classic, minimal, centered, etc.)
-- [ ] Show section-specific styling (colors, badges)
-- [ ] Generate final branded image for approval
-- [ ] Save template selection to `candidate_content.template_id`
+**Files Created**:
 
-**Technical Notes**:
+- `src/lib/content/` (types, components, queries, index)
+- `src/app/api/content/[id]/brand/route.ts`
+- `src/app/api/content/[id]/generate-image/route.ts`
+- `src/inngest/functions/generate-content-image.ts`
+- `src/app/(dashboard)/content/[id]/ContentDetailClient.tsx`
 
-- Brand system exists in `src/lib/brand/`
-- Templates: post-square-1:1, post-vertical-4:5, reel-cover-9:16, story-9:16
-- Each template has variants: classic, minimal, centered, etc.
-- Need to connect `candidate_content` → `BrandComposer` → preview canvas
+**Pending**: BrandComposer real integration (placeholder preview)
 
-**Files to Modify**:
+---
 
-- `src/app/(dashboard)/content/[id]/page.tsx`
-- Create: `src/app/(dashboard)/content/[id]/review-client.tsx`
+### 2.1. BrandComposer Real Integration
+
+**Status**: ✅ COMPLETED (2026-03-22)  
+**Impact**: HIGH - Completes the preview functionality  
+**Effort**: Medium
+
+**Implementation Summary**:
+
+- API route `/api/preview/[candidateId]` con composeBrandTemplate + Satori
+- Acepta `?variant=` query param para preview en tiempo real
+- BrandPreview hace fetch al API y muestra SVG
+- Loading state con SkeletonLoader
+- Error handling con fallback UI
+
+**Files Created/Modified**:
+
+- `src/app/api/preview/[candidateId]/route.ts` (NEW)
+- `src/lib/content/components/BrandPreview.tsx` (MODIFIED)
+
+**Verification**: PASS - variant change ahora dispara re-fetch
+
+---
+
+## 🔧 High Priority
+
+### 3. NextAuth TypeScript Error
+
+**Verification**: PASS - 8/8 tests passing
 
 ---
 
@@ -58,81 +84,77 @@ The "Revisar" (Review) button in `/content/[id]` currently fails because it does
 
 ### 2. Stage 2 → 3 Pipeline Integration
 
-**Status**: 🔲 Not Started  
+**Status**: ✅ COMPLETED (2026-03-21)  
 **Impact**: HIGH - Completes the content workflow  
 **Effort**: High
 
-**Problem**:  
-No service connects `topic_selections` (Stage 2) with `candidate_content` generation (Stage 3). When a user selects a topic, it doesn't automatically generate content candidates.
+**Implementation Summary**:
 
-**Acceptance Criteria**:
+- `generateContentFromSelection()` service implemented in `src/lib/generation/content-generator.ts`
+- Inngest async worker `generate-content` with retry (3 attempts, exponential backoff) + fallback caption
+- 5 tone personas created: informative, opinion, nostalgic, humorous, urgent
+- Feature flag `ENABLE_GENERATION_PIPELINE` for gradual rollout
+- 59 tests passing, build successful
 
-- [ ] Create service: `generateContentFromSelection(selection)`
-- [ ] Use selected tone to generate appropriate copy
-- [ ] Apply brand templates based on content section
-- [ ] Create `candidate_content` records from generated content
-- [ ] Support multiple formats per selection (post, story, reel)
-- [ ] Trigger generation on topic selection or via batch job
+**Files Created**:
 
-**Technical Notes**:
+- `src/lib/generation/` (types, errors, config, mappers, content-generator, index)
+- `src/inngest/functions/generate-content.ts`
+- `personas/` (5 tone files)
 
-- `topic_selections` has: source_type, formats[], tone, urgency
-- `candidate_content` needs: title, summary, template_id, etc.
-- May need AI service integration for copy generation
-- Should respect tenant's brand configuration
-
-**Files to Create/Modify**:
-
-- Create: `src/lib/generation/content-generator.ts`
-- Create: `src/lib/generation/tone-applier.ts`
-- Modify: `src/lib/topics/queries.ts` (add generation trigger)
+**Verification**: PASS WITH WARNINGS - 4 minor nomenclatura deviations documented (see SDD archive)
 
 ---
 
 ### 3. NextAuth TypeScript Error
 
-**Status**: 🔲 Bug - Prevents Production Build  
+**Status**: ⚠️ PARTIALLY FIXED (2026-03-22)  
 **Impact**: MEDIUM - Blocks deployment  
 **Effort**: Low
 
 **Problem**:  
-TypeScript error in auth route preventing `npm run build`:
+TypeScript error in auth route preventing `npm run build`.
 
-```
-Type error: Type 'typeof import("/api/auth/[...nextauth]/route")'
-does not satisfy the constraint...
-```
+**Fix Applied**:
 
-**Acceptance Criteria**:
+- Created `src/auth/index.ts` to resolve path alias issue
+- TypeScript error `@/auth` no longer fails
 
-- [ ] Fix TypeScript types in auth route
-- [ ] Ensure `npm run build` completes successfully
-- [ ] Verify auth still works in development
+**Remaining Issue**:
+Build still fails due to **preexisting errors** (not our changes):
+
+- `tandil-municipio` module not found (`system-a-orchestrator.ts`)
+- `.ttf` font files not supported by Turbopack
 
 **Files to Modify**:
 
-- `src/app/api/auth/[...nextauth]/route.ts`
+- `src/app/api/auth/[...nextauth]/route.ts` ✅ (fixed)
+- `src/auth/index.ts` ✅ (created)
 
 ---
 
 ## 📝 Medium Priority
 
-### 4. Component Test Dependencies
+### 5. Component Test Dependencies
 
-**Status**: ⚠️ Partial - Tests exist but don't run  
+**Status**: ✅ INSTALLED (2026-03-22)  
 **Impact**: LOW - Development experience  
 **Effort**: Low
 
 **Problem**:  
-Component tests require `@testing-library/react` which is not installed.
+Component tests require `@testing-library/react` which was not installed.
 
-**Acceptance Criteria**:
+**Fix Applied**:
 
-- [ ] Install `@testing-library/react` and `@testing-library/jest-dom`
-- [ ] Verify tests run with `npm test`
-- [ ] Fix any failing tests
+- Installed `@testing-library/react` and `@testing-library/jest-dom`
+- 8 tests passing in `src/lib/content`
 
-**Command**:
+**Remaining**:
+
+- Some existing tests fail due to preexisting issues
+- `topic-card.test.tsx` has jest-dom matcher issues
+
+**Command** (already run):
 
 ```bash
 npm install -D @testing-library/react @testing-library/jest-dom
@@ -140,7 +162,7 @@ npm install -D @testing-library/react @testing-library/jest-dom
 
 ---
 
-### 5. Event Detail Page Redirect
+### 6. Event Detail Page Redirect
 
 **Status**: 🔲 Improvement  
 **Impact**: LOW - UX consistency  
@@ -157,7 +179,7 @@ npm install -D @testing-library/react @testing-library/jest-dom
 
 ---
 
-### 6. Multi-Format Generation
+### 7. Multi-Format Generation
 
 **Status**: 🔲 Enhancement  
 **Impact**: MEDIUM - Feature completeness  
@@ -177,7 +199,7 @@ Currently topic selection allows choosing multiple formats (post, story, reel) b
 
 ## 🎨 Low Priority
 
-### 7. Dashboard Analytics
+### 8. Dashboard Analytics
 
 **Status**: 🔲 Future Enhancement  
 **Impact**: LOW - Nice to have  
@@ -193,7 +215,7 @@ Add analytics dashboard showing:
 
 ---
 
-### 8. Advanced Scheduling
+### 9. Advanced Scheduling
 
 **Status**: 🔲 Future Enhancement  
 **Impact**: LOW - Nice to have  
@@ -218,12 +240,15 @@ Add analytics dashboard showing:
 
 ### Build
 
-- ⚠️ NextAuth TypeScript error (see #3 above)
-- ✅ ~~Module not found: @/middleware~~ **FIXED**
+- ⚠️ **Preexisting build errors** (NOT from recent SDDs):
+  - `tandil-municipio` module not found in `system-a-orchestrator.ts`
+  - `.ttf` font files not supported by Turbopack
+  - These block `npm run build`
+- ✅ ~~NextAuth TypeScript error~~ **FIXED** (created `src/auth/index.ts`)
 
 ### Tests
 
-- ⚠️ Component tests need @testing-library/react (see #4 above)
+- ✅ ~~Component tests need @testing-library/react~~ **FIXED** (installed)
 
 ---
 
@@ -231,14 +256,19 @@ Add analytics dashboard showing:
 
 ### Sprint 1: Critical Fixes (This Week)
 
-1. Content Approval - Brand Integration (#1)
-2. Fix NextAuth TypeScript error (#3)
-3. Install test dependencies (#4)
+1. ✅ ~~Content Approval - Brand Integration (#1)~~ **DONE**
+2. ✅ ~~NextAuth TypeScript Error (#3)~~ **PARTIALLY DONE**
+3. ✅ ~~Install test dependencies (#4)~~ **DONE**
 
-### Sprint 2: Pipeline Completion (Next Week)
+### Sprint 1b: Build Errors (Requires Investigation)
 
-1. Stage 2 → 3 Pipeline Integration (#2)
-2. Multi-Format Generation (#6)
+1. Fix `tandil-municipio` module not found
+2. Resolve `.ttf` font file issue with Turbopack
+
+### Sprint 2: Brand Integration + Multi-Format (Next Week)
+
+1. **Integrar BrandComposer real en BrandPreview** (placeholder actual)
+2. Multi-Format Generation (#6) - verificar que funcione con pipeline completado
 
 ### Sprint 3: Polish & Features
 

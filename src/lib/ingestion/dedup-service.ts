@@ -279,10 +279,14 @@ export class DeduplicationService {
 
       // Add date range if available
       if (minDate) {
-        conditions.push(gte(calendarEvents.eventDate, minDate));
+        conditions.push(
+          gte(calendarEvents.eventDate, minDate.toISOString().split("T")[0]),
+        );
       }
       if (maxDate) {
-        conditions.push(lte(calendarEvents.eventDate, maxDate));
+        conditions.push(
+          lte(calendarEvents.eventDate, maxDate.toISOString().split("T")[0]),
+        );
       }
 
       const events = await db
@@ -300,7 +304,7 @@ export class DeduplicationService {
         title: row.title,
         description: row.description || undefined,
         eventType: row.eventType as EventType,
-        eventDate: row.eventDate,
+        eventDate: row.eventDate, // Already string from DB
         year: row.year || undefined,
         location: row.location as NormalizedEvent["location"],
         artists: row.artists as NormalizedEvent["artists"],
@@ -397,7 +401,7 @@ export class DeduplicationService {
           eventType: event.eventType,
           title: event.title,
           description: event.description,
-          eventDate: new Date(event.eventDate),
+          eventDate: event.eventDate,
           year: event.year,
           location: event.location || {
             city: null,
@@ -432,7 +436,7 @@ export class DeduplicationService {
           .set({
             title: event.title,
             description: event.description,
-            eventDate: new Date(event.eventDate),
+            eventDate: event.eventDate,
             year: event.year,
             location: event.location,
             artists: event.artists,
@@ -633,8 +637,8 @@ export class FeedDeduplicationService {
         sourceUrl: row.sourceUrl || "",
         title: row.title,
         body: row.body,
-        hook: "", // This field might not exist in the schema
-        facts: [], // This field might not exist
+        hook: row.hook,
+        facts: row.facts as ContentFeedItem["facts"],
         contentType: row.contentType as ContentFeedItem["contentType"],
         images: row.images as ContentFeedItem["images"],
         tags: row.tags,
@@ -642,10 +646,10 @@ export class FeedDeduplicationService {
         isShared: row.isShared,
         priority: 2, // Default
         contentHash: row.contentHash,
-        publishAt: row.publishAt,
-        expiresAt: row.expiresAt || undefined,
-        viralScore: 0, // Default
-        metadata: row.metadata as Record<string, unknown>,
+        publishAt: row.publishAt, // Date from timestamp column
+        expiresAt: row.expiresAt || undefined, // Date from timestamp column
+        viralScore: row.viralScore,
+        metadata: {}, // No metadata column in schema, use empty object
       }));
     } catch (error) {
       console.error(

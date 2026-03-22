@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 export default defineConfig({
   test: {
     globals: true,
-    environment: "node",
+    environment: "jsdom",
     include: ["src/**/*.test.ts", "src/**/*.test.tsx", "src/**/*.spec.ts"],
     alias: {
       "@": resolve(__dirname, "./src"),

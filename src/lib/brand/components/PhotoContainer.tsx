@@ -44,11 +44,16 @@ export function PhotoContainer({
     }
   };
 
+  // Parse aspect ratio to calculate height
+  const [w, h] = aspectRatio.split("/").map(Number);
+  const calculatedHeight = h && w ? `${(h / w) * 100}%` : "75%";
+
   // Container style
   const containerStyle: React.CSSProperties = {
+    display: "flex",
     position: "relative",
     width: "100%",
-    aspectRatio: aspectRatio,
+    height: calculatedHeight,
     overflow: "hidden",
     borderRadius: getBorderRadius(),
   };

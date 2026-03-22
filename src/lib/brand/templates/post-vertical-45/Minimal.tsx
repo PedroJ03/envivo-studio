@@ -48,6 +48,7 @@ export function Minimal({
       {/* Large Title - Maximum Impact */}
       <div
         style={{
+          display: "flex",
           marginTop: SPACING.xxl,
           marginBottom: SPACING.xxl,
           flexShrink: 0,
@@ -66,6 +67,7 @@ export function Minimal({
       {/* Photo */}
       <div
         style={{
+          display: "flex",
           width: "100%",
           flex: 1,
           minHeight: 0,

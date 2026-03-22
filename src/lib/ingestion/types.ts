@@ -105,7 +105,7 @@ export interface Image {
 
 export interface NormalizedEvent extends NormalizedItem {
   eventType: EventType;
-  eventDate: Date;
+  eventDate: string; // ISO date string YYYY-MM-DD (matches DB schema)
   year?: number;
   location?: Location;
   artists?: Artist[];
@@ -133,8 +133,8 @@ export interface ContentFeedItem extends NormalizedItem {
   facts: Fact[];
   images?: Image[];
   tags: string[];
-  publishAt: Date;
-  expiresAt?: Date;
+  publishAt: Date; // Timestamp from DB
+  expiresAt?: Date; // Timestamp from DB
   viralScore: number;
   updatedAt?: Date;
 }

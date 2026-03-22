@@ -9,9 +9,9 @@ const scrapeEventBodySchema = z.object({
 });
 
 type RouteContext = {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 };
 
 export async function POST(request: NextRequest, context: RouteContext) {
@@ -19,10 +19,15 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
   if (!tenantId) {
     return NextResponse.json(
-      { error: "Tenant context is required. Send x-tenant-id header or tenant_id query param." },
+      {
+        error:
+          "Tenant context is required. Send x-tenant-id header or tenant_id query param.",
+      },
       { status: 401 },
     );
   }
+
+  const { id } = await context.params;
 
   const rawBody = await request.json().catch(() => ({}));
   const parsedBody = scrapeEventBodySchema.safeParse(rawBody);
@@ -42,16 +47,19 @@ export async function POST(request: NextRequest, context: RouteContext) {
       name: "event/scrape.requested",
       data: {
         tenantId,
-        eventId: context.params.id,
+        eventId: id,
         sourceUrl: parsedBody.data.sourceUrl,
       },
     });
 
-    return NextResponse.json({
-      ok: true,
-      eventId: context.params.id,
-      inngestEventId: result.ids?.[0] ?? null,
-    }, { status: 202 });
+    return NextResponse.json(
+      {
+        ok: true,
+        eventId: id,
+        inngestEventId: result.ids?.[0] ?? null,
+      },
+      { status: 202 },
+    );
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to dispatch scraping event", details: `${error}` },
